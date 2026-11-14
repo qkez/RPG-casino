@@ -10,11 +10,15 @@ GIT_REPOSITORY https://github.com/SFML/SFML.git
 )
 FetchContent_MakeAvailable(SFML)
 
+feature/graphics-ui
 add_executable(game 
     src/main.cpp
     src/GameLogic.cpp
     src/UI.cpp
 )
+
+add_executable(game src/main.cpp "src/GameLogic.h" "src/UI.h")
+main
 
 target_link_libraries(game PRIVATE sfml-graphics sfml-window sfml-system)
 if(WIN32)

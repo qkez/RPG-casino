@@ -1,4 +1,5 @@
 #pragma once
+feature/graphics-ui
 #include <string>
 
 class GameLogic {
@@ -13,3 +14,5 @@ public:
     // Действия
     void spin(); // Функция для кручения барабанов
 };
+
+main

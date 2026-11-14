@@ -1,4 +1,5 @@
 #pragma once
+feature/graphics-ui
 #include <SFML/Graphics.hpp>
 #include "GameLogic.h"
 
@@ -13,3 +14,4 @@ private:
     sf::RectangleShape spinButton;
     sf::RectangleShape reelBox;
 };
+main
