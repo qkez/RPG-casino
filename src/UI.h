@@ -9,7 +9,6 @@ class UI {
 public:
     UI();
     void draw(sf::RenderWindow& window, const GameLogic& game);
-    ~UI();
     UIButton getClickedButton(int mouseX, int mouseY, GameState currentState);
 
 private:

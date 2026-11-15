@@ -79,7 +79,6 @@ void UI::drawText(sf::RenderWindow& window, const std::string& text, int x, int 
 
     window.draw(sfText);
 }
-
 void UI::drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf::Color color) {
     // Фон полоски (серый)
     sf::RectangleShape bg(sf::Vector2f(300, 25));
