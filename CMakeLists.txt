@@ -16,6 +16,8 @@ add_executable(game
     src/UI.cpp
 )
 
+target_compile_options(game PRIVATE /utf-8)
+
 target_link_libraries(game PRIVATE sfml-graphics sfml-window sfml-system)
 if(WIN32)
     add_custom_command(TARGET game POST_BUILD

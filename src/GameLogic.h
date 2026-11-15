@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 
+
 // Наши 10 символов
 enum class Symbol { SWORD, BOMB, SHIELD, LOCK, MEDKIT, BATTERY, COIN, DIAMOND, SKULL, JOKER };
 

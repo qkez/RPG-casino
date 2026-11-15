@@ -16,10 +16,20 @@ int main() {
             // Обработка кликов мыши
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
 
-                // Используем СТАРЫЙ метод проверки клика, который есть в UI.cpp
-                if (ui.isSpinButtonClicked(event.mouseButton.x, event.mouseButton.y)) {
-                    game.spin();
+                // Получаем ID нажатой кнопки
+                UIButton btn = ui.getClickedButton(event.mouseButton.x, event.mouseButton.y, game.currentState);
+
+                // Вызываем нужные функции логики в зависимости от нажатой кнопки
+                if (btn == UIButton::SPIN) game.spin();
+                else if (btn == UIButton::BLOOD_SPIN) game.doBloodSpin();
+                else if (btn == UIButton::ROBBERY) game.doRobbery();
+                else if (btn == UIButton::SAVE_EXIT) {
+                    game.saveGame();
+                    window.close();
                 }
+                // Пока эти кнопки-заглушки, они просто не будут ничего делать при клике
+                else if (btn == UIButton::HOLD) game.holdReel(0);
+                else if (btn == UIButton::HACK) game.useHack(Symbol::SWORD);
             }
         }
 
