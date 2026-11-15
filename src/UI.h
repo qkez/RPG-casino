@@ -5,11 +5,12 @@
 class UI {
 public:
     UI();
-    // Функция отрисовки: берет окно и данные игры, и рисует их
     void draw(sf::RenderWindow& window, const GameLogic& game);
 
+    // НОВОЕ: Функция, которая проверяет, попал ли клик по кнопке
+    bool isSpinButtonClicked(int mouseX, int mouseY);
+
 private:
-    // Здесь будут храниться наши фигуры (кнопка, квадрат)
     sf::RectangleShape spinButton;
     sf::RectangleShape reelBox;
 };

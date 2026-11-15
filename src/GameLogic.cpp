@@ -1,58 +1,125 @@
 #include "GameLogic.h"
-#include <iostream>
 #include <random>
+#include <fstream>
+#include <iostream>
 
-// Конструктор: задаем начальные значения
 GameLogic::GameLogic() {
-    playerHP = 100;
-    playerBalance = 100;
-    bossHP = 100;
-    lastMessage = "Система инициализирована. Готов к спину!";
+    loadGame(); // При запуске пытаемся загрузить прогресс
+    if (currentState == GameState::WIN) return; // Если всё пройдено, ничего не грузим
+
+    // Если это первый запуск, ставим Волка
+    if (bossIndex == 0 && currentBoss.maxHp == 0) {
+        currentBoss = { "Дикий Волк", BossType::WOLF, 6000, 6000, 200, 800 };
+    }
 }
 
-// Функция спина (кручения)
-void GameLogic::spin() {
-    // Проверка на кровавый спин (если нет денег)
-    if (playerBalance < 10) {
-        lastMessage = "Нет денег! Активирован КРОВАВЫЙ СПИН (Цена: 20 HP).";
-        playerHP -= 20;
-        if (playerHP <= 0) {
-            lastMessage = "Вы умерли от потери крови. GAME OVER.";
-            return;
-        }
-    }
-    else {
-        playerBalance -= 10; // Списываем 10 кредитов за спин
-        lastMessage = "Барабаны крутятся...";
-    }
-
-    // Генератор случайных чисел (выпадет 0, 1 или 2)
+Symbol GameLogic::getRandomSymbol() {
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dist(0, 2);
-    int slot1 = dist(gen);
-    int slot2 = dist(gen);
-    int slot3 = dist(gen);
+    std::uniform_int_distribution<> dist(0, 9);
+    return static_cast<Symbol>(dist(gen));
+}
 
-    // Проверка на выигрыш (если все 3 совпали)
-    if (slot1 == slot2 && slot2 == slot3) {
-        int damage = 25; // Наносимый урон
-        bossHP -= damage;
-        playerBalance += 50; // Выигрыш
-        lastMessage = "ДЖЕКПОТ! Урон боссу: " + std::to_string(damage) + ". +50 кредитов!";
+void GameLogic::spin() {
+    if (currentState != GameState::PLAYING && currentState != GameState::BLOOD_SPIN) return;
+
+    // Проверка на кровавый спин
+    if (player.balance < spinCost) {
+        currentState = GameState::BLOOD_SPIN;
+        lastMessage = "Мало денег! Кровавый спин будет стоить " + std::to_string((int)(player.maxHp * 0.05)) + " HP.";
+        return;
+    }
+
+    player.balance -= spinCost;
+    player.spinsSinceHold++; // Увеличиваем счетчик для захвата
+
+    reels[0] = getRandomSymbol();
+    reels[1] = getRandomSymbol();
+    reels[2] = getRandomSymbol();
+
+    // --- ЛОГИКА СИМВОЛОВ ---
+    // Здесь мы проверяем, что выпало
+    // потом допишем все 10 символов
+
+    lastMessage = "Вы прокрутили барабаны!";
+
+    // Логика атаки мечами
+    if (reels[0] == Symbol::SWORD && reels[1] == Symbol::SWORD) {
+        int dmg = currentBoss.hp * 0.05f;
+        if (dmg < 300) dmg = 300;
+        currentBoss.hp -= dmg;
+        lastMessage = "2 меча! Урон по боссу: " + std::to_string(dmg);
+    }
+    else if (reels[0] == Symbol::SWORD && reels[1] == Symbol::SWORD && reels[2] == Symbol::SWORD) {
+        int dmg = currentBoss.hp * 0.30f;
+        if (dmg < 666) dmg = 666;
+        currentBoss.hp -= dmg;
+        lastMessage = "ДЖЕКПОТ! 3 меча! Урон: " + std::to_string(dmg);
+    }
+
+    // Ход босса
+    bossTurn();
+    checkWinOrLose();
+}
+
+void GameLogic::bossTurn() {
+    if (currentBoss.hp <= 0) return;
+
+    // Логика заряда спец-атаки
+    if (currentBoss.chargeTimer == 0) {
+        currentBoss.chargeTimer = 1; // Начинает заряжаться
+        lastMessage += " Босс напрягается...";
+    }
+    else if (currentBoss.chargeTimer == 1) {
+        currentBoss.chargeTimer = 2; // Зарядился
+        lastMessage += " Босс готовит СУПЕР-УДАР!";
     }
     else {
-        lastMessage = "Мимо! Босс атакует в ответ.";
-        playerHP -= 10; // Босс бьет в ответ
+        // Наносит спец-атаку
+        player.hp -= currentBoss.specAtk;
+        lastMessage += " Босс нанес СУПЕР-УДАР на " + std::to_string(currentBoss.specAtk) + " урона!";
+        currentBoss.chargeTimer = 0; // Сброс
     }
+}
 
-    // Проверка на смерть игрока или убийство босса
-    if (bossHP <= 0) {
-        bossHP = 0;
-        lastMessage = "БОСС ПОВЕРЖЕН! ВЫ ПОБЕДИЛИ!";
+void GameLogic::doBloodSpin() {
+    int hpCost = player.maxHp * 0.05f;
+    player.hp -= hpCost;
+    player.isHpRed = true; // Шкала становится красной
+    player.balance += 500; // Даем денег, чтобы игрок мог играть
+    currentState = GameState::PLAYING;
+    lastMessage = "Кровавый спин! -" + std::to_string(hpCost) + " HP. Выжившие получают 500 кредитов.";
+    checkWinOrLose();
+}
+
+void GameLogic::checkWinOrLose() {
+    if (player.hp <= 0) {
+        if (player.balance <= 0) {
+            currentState = GameState::ROBBERY; // Последний шанс
+            lastMessage = "Вы на грани! Попробуйте ограбить казино!";
+        }
+        else {
+            currentState = GameState::GAME_OVER;
+        }
     }
-    else if (playerHP <= 0) {
-        playerHP = 0;
-        lastMessage = "ВЫ ПОГИБЛИ. GAME OVER.";
+    if (currentBoss.hp <= 0) {
+        nextBoss();
+    }
+}
+
+void GameLogic::nextBoss() {
+    bossIndex++;
+    player.maxHp = player.maxHp * 1.1f; // +10% к макс HP
+    player.hp = player.maxHp * 0.5f; // Восстановление 50% HP
+
+    if (bossIndex == 1) {
+        currentBoss = { "Дракончик", BossType::DRAGON, 16665, 16665, 333, 1332 };
+    }
+    else if (bossIndex == 2) {
+        currentBoss = { "Няшка", BossType::CUTE_FINAL, 33330, 33330, 466, 1864 };
+    }
+    else {
+        currentState = GameState::WIN;
+        lastMessage = "ВЫ ПРОШЛИ ИГРУ!";
     }
 }
