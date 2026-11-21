@@ -12,6 +12,7 @@ public:
     void draw(sf::RenderWindow& window, const GameLogic& game);
     UIButton getClickedButton(int mouseX, int mouseY, GameState currentState);
     void startSpinAnimation();
+    void triggerBloodFlash(int hpLost);
 
 private:
     sf::Font fontMain;
@@ -23,6 +24,10 @@ private:
     sf::Clock spinTimer;
     sf::Clock frameTimer;
     Symbol fakeReels[3] = {Symbol::SWORD, Symbol::COIN, Symbol::SKULL};
+
+    bool isBloodFlashing = false;
+    sf::Clock bloodFlashTimer;
+    int bloodHpLost = 0;
 
     sf::RectangleShape spinButton;
     sf::RectangleShape holdButton;

@@ -63,6 +63,12 @@ void UI::startSpinAnimation() {
     frameTimer.restart();
 }
 
+void UI::triggerBloodFlash(int hpLost) {
+    isBloodFlashing = true;
+    bloodHpLost = hpLost;
+    bloodFlashTimer.restart();
+}
+
 std::string UI::getSymbolString(Symbol sym) {
     switch (sym) {
     case Symbol::SWORD: return "МЕЧ";
@@ -213,6 +219,46 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
 
     window.draw(saveButton);
     drawText(window, "SAVE", 705, 12, 14, sf::Color::White, false, true);
+
+    // --- 6. АНИМАЦИЯ КРОВАВОЙ ВСПЫШКИ И ВЫЛЕТАЮЩИЙ ТЕКСТ --- <--- ДОБАВИТЬ ВЕСЬ ЭТОТ БЛОК
+    if (isBloodFlashing) {
+        float flashElapsed = bloodFlashTimer.getElapsedTime().asSeconds();
+        float flashDuration = 1.2f; // Анимация длится 1.2 секунды
+
+        if (flashElapsed < flashDuration) {
+            // 1. Красная заливка экрана (прозрачность падает от 190 до 0)
+            float progress = 1.0f - (flashElapsed / flashDuration);
+            sf::Uint8 bgAlpha = static_cast<sf::Uint8>(190 * progress);
+
+            sf::RectangleShape bloodOverlay(sf::Vector2f(800.f, 600.f));
+            bloodOverlay.setPosition(0.f, 0.f);
+            bloodOverlay.setFillColor(sf::Color(180, 0, 0, bgAlpha));
+            window.draw(bloodOverlay);
+
+            // 2. Вылетающий текст "-333 HP" по центру
+            sf::Text dmgText;
+            dmgText.setFont(fontMain);
+            dmgText.setString("-" + std::to_string(bloodHpLost) + " HP");
+            dmgText.setCharacterSize(48);
+
+            // Центрируем текст по горизонтали и двигаем вверх со временем
+            sf::FloatRect textBounds = dmgText.getLocalBounds();
+            float textX = 400.f - (textBounds.width / 2.f);
+            float textY = 260.f - (flashElapsed * 60.f); // Всплывает вверх на 60 пикселей
+            dmgText.setPosition(textX, textY);
+
+            // Ярко-белый текст с красной обводкой, чтобы читался на красном фоне
+            sf::Uint8 textAlpha = static_cast<sf::Uint8>(255 * progress);
+            dmgText.setFillColor(sf::Color(255, 255, 255, textAlpha));
+            dmgText.setOutlineColor(sf::Color(120, 0, 0, textAlpha));
+            dmgText.setOutlineThickness(3.f);
+
+            window.draw(dmgText);
+        }
+        else {
+            isBloodFlashing = false;
+        }
+    }
 }
 
 UIButton UI::getClickedButton(int mouseX, int mouseY, GameState currentState) {

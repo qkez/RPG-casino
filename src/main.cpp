@@ -20,7 +20,12 @@ int main() {
                     game.spin();
                     ui.startSpinAnimation();
                 }
-                else if (btn == UIButton::BLOOD_SPIN) game.doBloodSpin();
+                else if (btn == UIButton::BLOOD_SPIN) {
+                    int hpBefore = game.player.hp;
+                    game.doBloodSpin();
+                    int hpLost = hpBefore - game.player.hp;
+                    ui.triggerBloodFlash(hpLost);
+                }
                 else if (btn == UIButton::ROBBERY) game.doRobbery();
                 else if (btn == UIButton::SAVE_EXIT) {
                     game.saveGame();
