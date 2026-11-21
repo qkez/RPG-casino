@@ -20,6 +20,10 @@ private:
 
     std::map<Symbol, sf::Texture> symbolTextures;
 
+    // Текстуры главного героя и боссов
+    sf::Texture playerTexture;
+    std::map<BossType, sf::Texture> bossTextures;
+
     bool isSpinning = false;
     sf::Clock spinTimer;
     sf::Clock frameTimer;

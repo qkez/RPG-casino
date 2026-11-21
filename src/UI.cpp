@@ -10,46 +10,65 @@ UI::UI() {
         std::cout << "ОШИБКА: Не найден font_glitch.ttf!" << std::endl;
     }
 
-    // Загружаем все 10 картинок из папки assets
     auto loadTex = [&](Symbol sym, const std::string& path) {
         sf::Texture tex;
         if (tex.loadFromFile(path)) {
             tex.setSmooth(true);
             symbolTextures[sym] = tex;
-        } else {
+        }
+        else {
             std::cout << "ОШИБКА загрузки картинки: " << path << std::endl;
         }
-    };
+        };
 
-    loadTex(Symbol::MEDKIT,  "assets/aid-kit.png");
+    loadTex(Symbol::MEDKIT, "assets/aid-kit.png");
     loadTex(Symbol::BATTERY, "assets/batteries.png");
-    loadTex(Symbol::BOMB,    "assets/bomb.png");
-    loadTex(Symbol::COIN,    "assets/coin.png");
+    loadTex(Symbol::BOMB, "assets/bomb.png");
+    loadTex(Symbol::COIN, "assets/coin.png");
     loadTex(Symbol::DIAMOND, "assets/diamond.png");
-    loadTex(Symbol::SKULL,   "assets/skull.png");
-    loadTex(Symbol::SWORD,   "assets/sword.png");
-    loadTex(Symbol::SHIELD,  "assets/shield.png");
-    loadTex(Symbol::LOCK,    "assets/lock.png");
-    loadTex(Symbol::JOKER,   "assets/joker.png");
+    loadTex(Symbol::SKULL, "assets/skull.png");
+    loadTex(Symbol::SWORD, "assets/sword.png");
+    loadTex(Symbol::SHIELD, "assets/shield.png");
+    loadTex(Symbol::LOCK, "assets/lock.png");
+    loadTex(Symbol::JOKER, "assets/joker.png");
+
+    // --- ЗАГРУЗКА КАРТИНОК ГЕРОЯ И БОССА ---
+    if (playerTexture.loadFromFile("assets/knight.png")) {
+        playerTexture.setSmooth(false); // Чёткие пиксели
+    }
+    else {
+        std::cout << "ОШИБКА загрузки: assets/knight.png" << std::endl;
+    }
+
+    if (bossTextures[BossType::WOLF].loadFromFile("assets/wolf.png")) {
+        bossTextures[BossType::WOLF].setSmooth(false);
+    }
+    else {
+        std::cout << "ОШИБКА загрузки: assets/wolf.png" << std::endl;
+    }
+
+    // Когда добавите картинки для Дракончика и Милашки, просто раскомментируйте эти строчки:
+    // if (bossTextures[BossType::DRAGON].loadFromFile("assets/dragon.png")) bossTextures[BossType::DRAGON].setSmooth(false);
+    // if (bossTextures[BossType::CUTE_FINAL].loadFromFile("assets/cute.png")) bossTextures[BossType::CUTE_FINAL].setSmooth(false);
 
     spinButton.setSize(sf::Vector2f(150, 50));
-    spinButton.setPosition(325, 520);
+    spinButton.setPosition(325, 525);
     spinButton.setFillColor(sf::Color(0, 255, 100));
 
     holdButton.setSize(sf::Vector2f(100, 40));
-    holdButton.setPosition(100, 520);
+    holdButton.setPosition(100, 525);
     holdButton.setFillColor(sf::Color(255, 215, 0));
 
     hackButton.setSize(sf::Vector2f(100, 40));
-    hackButton.setPosition(600, 520);
+    hackButton.setPosition(600, 525);
     hackButton.setFillColor(sf::Color(0, 255, 255));
 
     bloodSpinButton.setSize(sf::Vector2f(200, 50));
-    bloodSpinButton.setPosition(300, 520);
+    bloodSpinButton.setPosition(300, 525);
     bloodSpinButton.setFillColor(sf::Color(255, 0, 0));
 
     robberyButton.setSize(sf::Vector2f(200, 50));
-    robberyButton.setPosition(300, 520);
+    robberyButton.setPosition(300, 525);
     robberyButton.setFillColor(sf::Color(255, 100, 0));
 
     saveButton.setSize(sf::Vector2f(100, 30));
@@ -96,7 +115,8 @@ void UI::drawText(sf::RenderWindow& window, const std::string& text, int x, int 
 
     if (isGlitch) {
         sfText.setFillColor(sf::Color(255, 0, 100));
-    } else {
+    }
+    else {
         sfText.setFillColor(color);
     }
 
@@ -133,6 +153,14 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     drawText(window, "КРЕДИТЫ: " + std::to_string(game.player.balance), 50, 110, 18, sf::Color::Yellow, false, false);
     drawText(window, "ЭНЕРГИЯ: " + std::to_string(game.player.energy) + "/100", 50, 140, 18, sf::Color::Cyan, false, false);
 
+    // Картинка рыцаря под характеристиками игрока
+    if (playerTexture.getSize().x > 0) {
+        sf::Sprite playerSprite(playerTexture);
+        playerSprite.setScale(125.f / playerTexture.getSize().x, 125.f / playerTexture.getSize().y);
+        playerSprite.setPosition(50.f, 165.f);
+        window.draw(playerSprite);
+    }
+
     // --- 2. ИНФОРМАЦИЯ О БОССЕ ---
     drawBar(window, 450, 50, game.currentBoss.hp, game.currentBoss.maxHp, sf::Color::Red);
     drawText(window, game.currentBoss.name, 450, 80, 20, sf::Color::Magenta, false, true);
@@ -142,14 +170,24 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         drawText(window, "ВНИМАНИЕ: СУПЕР-УДАР!", 450, 140, 20, sf::Color::Red, true, true);
     }
 
-    // --- 3. ЛОГ СООБЩЕНИЙ ---
-    if (isSpinning) {
-        drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 50, 200, 18, sf::Color::Cyan, false, false);
-    } else {
-        drawText(window, game.lastMessage, 50, 200, 18, sf::Color::White, false, false);
+    // Картинка текущего босса под его характеристиками
+    if (bossTextures.find(game.currentBoss.type) != bossTextures.end() && bossTextures[game.currentBoss.type].getSize().x > 0) {
+        sf::Texture& bTex = bossTextures[game.currentBoss.type];
+        sf::Sprite bossSprite(bTex);
+        bossSprite.setScale(125.f / bTex.getSize().x, 125.f / bTex.getSize().y);
+        bossSprite.setPosition(450.f, 165.f);
+        window.draw(bossSprite);
     }
 
-    // --- 4. БАРАБАНЫ С КАРТИНКАМИ И АНИМАЦИЕЙ ---
+    // --- 3. ЛОГ СООБЩЕНИЙ (сдвинут вниз под портреты) ---
+    if (isSpinning) {
+        drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 50, 305, 18, sf::Color::Cyan, false, false);
+    }
+    else {
+        drawText(window, game.lastMessage, 50, 305, 18, sf::Color::White, false, false);
+    }
+
+    // --- 4. БАРАБАНЫ С КАРТИНКАМИ И АНИМАЦИЕЙ (сдвинуты вниз) ---
     float elapsed = spinTimer.getElapsedTime().asSeconds();
     if (isSpinning) {
         if (frameTimer.getElapsedTime().asSeconds() > 0.06f) {
@@ -165,7 +203,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
 
     for (int i = 0; i < 3; i++) {
         float boxX = 150.f + i * 160.f;
-        float boxY = 280.f;
+        float boxY = 350.f;
         float boxSize = 120.f;
 
         sf::RectangleShape reelBox(sf::Vector2f(boxSize, boxSize));
@@ -191,7 +229,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
             sprite.setPosition(boxX + padding, boxY + padding);
 
             window.draw(sprite, sf::BlendAdd);
-        } 
+        }
         else {
             drawText(window, getSymbolString(symbolToShow), boxX + 10.f, boxY + 45.f, 22, sf::Color::White, false, true);
         }
@@ -200,59 +238,50 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     // --- 5. КНОПКИ ---
     if (game.currentState == GameState::PLAYING) {
         window.draw(spinButton);
-        drawText(window, "SPIN", 365, 535, 24, sf::Color::Black, false, true);
+        drawText(window, "SPIN", 365, 540, 24, sf::Color::Black, false, true);
 
         window.draw(holdButton);
-        drawText(window, "HOLD", 115, 530, 18, sf::Color::Black, false, true);
+        drawText(window, "HOLD", 115, 535, 18, sf::Color::Black, false, true);
 
         window.draw(hackButton);
-        drawText(window, "HACK", 615, 530, 18, sf::Color::Black, false, true);
+        drawText(window, "HACK", 615, 535, 18, sf::Color::Black, false, true);
     }
     else if (game.currentState == GameState::BLOOD_SPIN) {
         window.draw(bloodSpinButton);
-        drawText(window, "КРОВАВЫЙ СПИН", 315, 535, 20, sf::Color::White, false, true);
+        drawText(window, "КРОВАВЫЙ СПИН", 315, 540, 20, sf::Color::White, false, true);
     }
     else if (game.currentState == GameState::ROBBERY) {
         window.draw(robberyButton);
-        drawText(window, "ОГРАБИТЬ КАЗИНО", 315, 535, 20, sf::Color::White, false, true);
+        drawText(window, "ОГРАБИТЬ КАЗИНО", 315, 540, 20, sf::Color::White, false, true);
     }
 
     window.draw(saveButton);
     drawText(window, "SAVE", 705, 12, 14, sf::Color::White, false, true);
 
-    // --- 6. АНИМАЦИЯ КРОВАВОЙ ВСПЫШКИ И ВЫЛЕТАЮЩИЙ ТЕКСТ --- <--- ДОБАВИТЬ ВЕСЬ ЭТОТ БЛОК
+    // --- 6. АНИМАЦИЯ КРОВАВОЙ ВСПЫШКИ И ВЫЛЕТАЮЩИЙ ТЕКСТ ---
     if (isBloodFlashing) {
         float flashElapsed = bloodFlashTimer.getElapsedTime().asSeconds();
-        float flashDuration = 1.2f; // Анимация длится 1.2 секунды
+        float flashDuration = 1.2f;
 
         if (flashElapsed < flashDuration) {
-            // 1. Красная заливка экрана (прозрачность падает от 190 до 0)
             float progress = 1.0f - (flashElapsed / flashDuration);
             sf::Uint8 bgAlpha = static_cast<sf::Uint8>(190 * progress);
-
             sf::RectangleShape bloodOverlay(sf::Vector2f(800.f, 600.f));
             bloodOverlay.setPosition(0.f, 0.f);
             bloodOverlay.setFillColor(sf::Color(180, 0, 0, bgAlpha));
             window.draw(bloodOverlay);
-
-            // 2. Вылетающий текст "-333 HP" по центру
             sf::Text dmgText;
             dmgText.setFont(fontMain);
             dmgText.setString("-" + std::to_string(bloodHpLost) + " HP");
             dmgText.setCharacterSize(48);
-
-            // Центрируем текст по горизонтали и двигаем вверх со временем
             sf::FloatRect textBounds = dmgText.getLocalBounds();
             float textX = 400.f - (textBounds.width / 2.f);
-            float textY = 260.f - (flashElapsed * 60.f); // Всплывает вверх на 60 пикселей
+            float textY = 260.f - (flashElapsed * 60.f);
             dmgText.setPosition(textX, textY);
-
-            // Ярко-белый текст с красной обводкой, чтобы читался на красном фоне
             sf::Uint8 textAlpha = static_cast<sf::Uint8>(255 * progress);
             dmgText.setFillColor(sf::Color(255, 255, 255, textAlpha));
             dmgText.setOutlineColor(sf::Color(120, 0, 0, textAlpha));
             dmgText.setOutlineThickness(3.f);
-
             window.draw(dmgText);
         }
         else {
@@ -260,11 +289,9 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         }
     }
 }
-
 UIButton UI::getClickedButton(int mouseX, int mouseY, GameState currentState) {
     if (saveButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::SAVE_EXIT;
     if (isSpinning) return UIButton::NONE;
-
     if (currentState == GameState::PLAYING) {
         if (spinButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::SPIN;
         if (holdButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::HOLD;
@@ -276,6 +303,5 @@ UIButton UI::getClickedButton(int mouseX, int mouseY, GameState currentState) {
     else if (currentState == GameState::ROBBERY) {
         if (robberyButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::ROBBERY;
     }
-
     return UIButton::NONE;
 }
