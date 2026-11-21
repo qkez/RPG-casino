@@ -3,10 +3,10 @@
 #include <cstdlib>
 
 UI::UI() {
-    if (!fontPixel.loadFromFile("font_pixel.ttf")) {
+    if (!fontPixel.loadFromFile("assets/font_pixel.ttf")) {
         std::cout << "ОШИБКА: Не найден font_pixel.ttf!" << std::endl;
     }
-    if (!fontMain.loadFromFile("font_glitch.ttf")) {
+    if (!fontMain.loadFromFile("assets/font_glitch.ttf")) {
         std::cout << "ОШИБКА: Не найден font_glitch.ttf!" << std::endl;
     }
 

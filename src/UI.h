@@ -22,7 +22,7 @@ private:
     bool isSpinning = false;
     sf::Clock spinTimer;
     sf::Clock frameTimer;
-    Symbol fakeReels = { Symbol::SWORD, Symbol::COIN, Symbol::SKULL };
+    Symbol fakeReels[3] = {Symbol::SWORD, Symbol::COIN, Symbol::SKULL};
 
     sf::RectangleShape spinButton;
     sf::RectangleShape holdButton;
