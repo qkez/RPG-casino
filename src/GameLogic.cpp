@@ -506,12 +506,32 @@ void GameLogic::loadGame() {
     for (int i = 0; i < 3; ++i) if (!(in >> reelValues[i])) return;
     if (!(in >> loadedShield >> loadedLocks >> loadedArmor >> loadedHack >> loadedHackTarget)) return;
     if (!(in >> std::quoted(loadedMessage) >> eventCount)) return;
+    // Не читаем повреждённое сохранение с некорректным количеством событий.
+    if (eventCount > 100) return;
     std::vector<CombatEvent> loadedEvents;
     for (size_t i = 0; i < eventCount; ++i) {
         CombatEvent event;
         if (!(in >> event.positive >> std::quoted(event.text))) return;
         loadedEvents.push_back(event);
     }
+    // Проверяем диапазоны до присваивания: повреждённый файл не должен
+    // создавать недопустимые индексы барабанов или состояния игры.
+    if (loadedPlayer.maxHp <= 0 || loadedPlayer.hp < 0 || loadedPlayer.hp > loadedPlayer.maxHp ||
+        loadedPlayer.balance < 0 || loadedPlayer.maxEnergy <= 0 ||
+        loadedPlayer.energy < 0 || loadedPlayer.energy > loadedPlayer.maxEnergy ||
+        loadedPlayer.spinsSinceHold < 0 ||
+        loadedBossIndex < 0 || loadedBossIndex > 3 ||
+        bossType < 0 || bossType > 2 ||
+        loadedBoss.maxHp <= 0 || loadedBoss.hp < 0 || loadedBoss.hp > loadedBoss.maxHp ||
+        loadedBoss.atk < 0 || loadedBoss.specAtk < 0 ||
+        loadedBoss.chargeTimer < -1 || loadedBoss.chargeTimer > 2 ||
+        state < 0 || state > 4 || loadedSpinCost <= 0 ||
+        loadedHold < -1 || loadedHold > 2 || loadedShield < 0 ||
+        loadedHackTarget < 0 || loadedHackTarget > 9 || loadedBoss.name.empty()) return;
+    for (int i = 0; i < 3; ++i) {
+        if (reelValues[i] < 0 || reelValues[i] > 9) return;
+    }
+
     player = loadedPlayer;
     currentBoss = loadedBoss;
     bossIndex = loadedBossIndex;
