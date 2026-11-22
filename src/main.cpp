@@ -14,6 +14,12 @@ int main() {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
 
+            if (ui.introActive()) {
+                if (event.type == sf::Event::KeyPressed || event.type == sf::Event::MouseButtonPressed)
+                    ui.handleIntroInput();
+                continue;
+            }
+
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 if (ui.isSelectingHold()) {
                     int selectedReel = ui.getReelIndexAt(event.mouseButton.x, event.mouseButton.y);
@@ -47,8 +53,12 @@ int main() {
             }
         }
 
-        window.clear(sf::Color(10, 10, 20));
-        ui.draw(window, game);
+        if (ui.introActive()) {
+            ui.drawIntro(window);
+        } else {
+            window.clear(sf::Color(10, 10, 20));
+            ui.draw(window, game);
+        }
         window.display();
 
         // Сначала завершается анимация, затем применяются результаты спина.
