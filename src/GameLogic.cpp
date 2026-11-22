@@ -386,6 +386,34 @@ void GameLogic::nextBoss() {
     }
 }
 
+void GameLogic::setBossForTesting(int index) {
+    // Временное переключение боссов для тестирования без прохождения уровней.
+    if (index < 0) index = 2;
+    if (index > 2) index = 0;
+
+    bossIndex = index;
+    if (bossIndex == 0) {
+        currentBoss = { "Дикий Волк", BossType::WOLF, 6000, 6000, 200, 800, 0, false };
+    }
+    else if (bossIndex == 1) {
+        currentBoss = { "Дракончик", BossType::DRAGON, 16665, 16665, 333, 1332, 0, false };
+    }
+    else {
+        currentBoss = { "Милашка", BossType::CUTE_FINAL, 33330, 33330, 466, 1864, 0, false };
+    }
+
+    currentState = GameState::PLAYING;
+    heldReelIndex = -1;
+    shieldBlocksRemaining = 0;
+    locksActive = false;
+    armorActive = false;
+    hackPending = false;
+    hackTarget = Symbol::JOKER;
+    player.spinsSinceHold = 0;
+    combatEvents.clear();
+    lastMessage = "DEV: выбран босс " + std::to_string(bossIndex + 1) + " из 3.";
+}
+
 // ==========================================
 // ЗАГЛУШКИ (Пока не реализованы)
 // ==========================================
