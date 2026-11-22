@@ -66,16 +66,39 @@ void GameLogic::spin() {
         lastMessage = "СУПЕР-ДЖЕКПОТ! 🃏🃏🃏 Боссу остается 1 HP!";
     }
     else {
-        // Если 2 джокера, ищем третий символ и делаем его тройным
         if (jokerCount == 2) {
-            for (int i = 0; i < 9; i++) {
+            for (int i = 0; i < static_cast<int>(Symbol::JOKER); i++) {
                 if (counts[i] == 1) { counts[i] = 3; break; }
             }
         }
-        // Если 1 джокер, ищем два одинаковых и делаем их тройными
         else if (jokerCount == 1) {
-            for (int i = 0; i < 9; i++) {
-                if (counts[i] == 2) { counts[i] = 3; break; }
+            int pairedSymbol=-1, firstSingle=-1, secondSingle=-1;
+            for (int i=0; i<static_cast<int>(Symbol::JOKER); i++) {
+                if (counts[i]==2) pairedSymbol=i;
+                else if (counts[i]==1) {
+                    if (firstSingle==-1) firstSingle=i;
+                    else secondSingle=i;
+                }
+            }
+            if (pairedSymbol!=-1) counts[pairedSymbol]=3;
+            else if (firstSingle!=-1 && secondSingle!=-1) {
+                auto comboScore=[this](int symbol) {
+                    const bool playerInDanger=player.hp<=player.maxHp/2;
+                    switch(static_cast<Symbol>(symbol)) {
+                    case Symbol::MEDKIT:
+                        return playerInDanger ? 1000+(player.maxHp-player.hp)/10 : 250;
+                    case Symbol::SWORD:
+                    case Symbol::BOMB:
+                        return currentBoss.hp>0 ? 800+(currentBoss.maxHp-currentBoss.hp)/20 : 0;
+                    case Symbol::DIAMOND: return 500;
+                    case Symbol::COIN: return 400;
+                    case Symbol::BATTERY: return player.energy<player.maxEnergy ? 350 : 150;
+                    case Symbol::SKULL: return -100;
+                    default: return -1000; // Пары щита и замка отдельно не активируются.
+                    }
+                };
+                int chosen=comboScore(firstSingle)>=comboScore(secondSingle)?firstSingle:secondSingle;
+                counts[chosen]=2;
             }
         }
 
@@ -117,18 +140,26 @@ void GameLogic::spin() {
             player.isHpRed = true;
             lastMessage = "ДЖЕКПОТ! 💀💀💀 У вас остался 1 HP!";
         }
+        else if (counts[static_cast<int>(Symbol::SHIELD)] == 3) {
+            shieldBlocksRemaining += 2;
+            lastMessage = "ДЖЕКПОТ! 🛡️🛡️🛡️ Следующие 2 атаки босса заблокированы!";
+        }
+        else if (counts[static_cast<int>(Symbol::LOCK)] == 3) {
+            locksActive = true;
+            lastMessage = "ДЖЕКПОТ! 🔒🔒🔒 Обычные атаки босса заблокированы до конца забега!";
+        }
 
         // --- ОБЫЧНЫЕ ВЫПАДЕНИЯ (ДВОЙКИ) ---
         else if (counts[static_cast<int>(Symbol::SWORD)] == 2) {
-            int dmg = static_cast<int>(currentBoss.hp * 0.05f);
-            if (dmg < 300) dmg = 300;
+            int dmg = static_cast<int>(currentBoss.maxHp * 0.05f);
             currentBoss.hp -= dmg;
+            if (currentBoss.hp < 0) currentBoss.hp = 0;
             lastMessage = "2 меча! Урон боссу: " + std::to_string(dmg);
         }
         else if (counts[static_cast<int>(Symbol::BOMB)] == 2) {
-            int dmg = static_cast<int>(currentBoss.hp * 0.10f);
-            if (dmg < 600) dmg = 600;
+            int dmg = static_cast<int>(currentBoss.maxHp * 0.10f);
             currentBoss.hp -= dmg;
+            if (currentBoss.hp < 0) currentBoss.hp = 0;
             lastMessage = "2 бомбы! Урон: " + std::to_string(dmg);
         }
         else if (counts[static_cast<int>(Symbol::MEDKIT)] == 2) {
@@ -169,19 +200,32 @@ void GameLogic::spin() {
 // ХОД БОССА (АТАКИ)
 // ==========================================
 void GameLogic::bossTurn() {
-    if (currentBoss.hp <= 0) return; // Если босс мертв, он не бьет
+    if (currentBoss.hp <= 0) return;
 
-    // Босс всегда бьет обычной атакой в свой ход
-    player.hp -= currentBoss.atk;
-    lastMessage += " Босс бьет на " + std::to_string(currentBoss.atk) + " урона.";
+    // Щит блокирует следующие две атаки любого типа.
+    // Замок блокирует обычные атаки, но не специальные.
+    auto takeBossAttack = [this](int damage, bool isSpecial) {
+        if (shieldBlocksRemaining > 0) {
+            --shieldBlocksRemaining;
+            lastMessage += " Щит полностью заблокировал атаку босса!";
+            return;
+        }
+        if (!isSpecial && locksActive) {
+            lastMessage += " Замок остановил обычную атаку босса!";
+            return;
+        }
+        player.hp -= damage;
+        lastMessage += isSpecial
+            ? " Босс нанес СУПЕР-УДАР на " + std::to_string(damage) + " урона!"
+            : " Босс бьет на " + std::to_string(damage) + " урона.";
+    };
 
-    // Проверяем, не умер ли игрок от обычной атаки
+    takeBossAttack(currentBoss.atk, false);
     if (player.hp <= 0) {
         checkWinOrLose();
         return;
     }
 
-    // Логика заряда спец-атаки (цикл 3 хода: 0 -> 1 -> 2 -> удар)
     if (currentBoss.chargeTimer == 0) {
         currentBoss.chargeTimer = 1;
         lastMessage += " Босс напрягается...";
@@ -191,14 +235,10 @@ void GameLogic::bossTurn() {
         lastMessage += " ВНИМАНИЕ! Босс готовит СУПЕР-УДАР!";
     }
     else if (currentBoss.chargeTimer == 2) {
-        // Босс наносит спец-удар вместо обычного (или в дополнение, тут решай сама.
-        // В коде ниже он наносит спец-удар, а обычный урон уже прошел в начале функции)
-        player.hp -= currentBoss.specAtk;
-        lastMessage += " Босс нанес СУПЕР-УДАР на " + std::to_string(currentBoss.specAtk) + " урона!";
-        currentBoss.chargeTimer = 0; // Сброс цикла
+        takeBossAttack(currentBoss.specAtk, true);
+        currentBoss.chargeTimer = 0;
     }
 }
-
 // ==========================================
 // КРОВАВЫЙ СПИН
 // ==========================================
