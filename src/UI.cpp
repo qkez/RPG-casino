@@ -48,9 +48,19 @@ UI::UI() {
         std::cout << "ОШИБКА загрузки: assets/wolf.png" << std::endl;
     }
 
-    // Когда добавите картинки для Дракончика и Милашки, просто раскомментируйте эти строчки:
-    // if (bossTextures[BossType::DRAGON].loadFromFile("assets/dragon.png")) bossTextures[BossType::DRAGON].setSmooth(false);
-    // if (bossTextures[BossType::CUTE_FINAL].loadFromFile("assets/cute.png")) bossTextures[BossType::CUTE_FINAL].setSmooth(false);
+    if (bossTextures[BossType::DRAGON].loadFromFile("assets/dragon.png")) {
+        bossTextures[BossType::DRAGON].setSmooth(false);
+    }
+    else {
+        std::cout << "ОШИБКА загрузки: assets/dragon.png" << std::endl;
+    }
+
+    if (bossTextures[BossType::CUTE_FINAL].loadFromFile("assets/cute.png")) {
+        bossTextures[BossType::CUTE_FINAL].setSmooth(false);
+    }
+    else {
+        std::cout << "ОШИБКА загрузки: assets/cute.png" << std::endl;
+    }
 
     spinButton.setSize(sf::Vector2f(150, 50));
     spinButton.setPosition(425, 650);
