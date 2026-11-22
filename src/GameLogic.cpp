@@ -368,6 +368,10 @@ void GameLogic::nextBoss() {
     shieldBlocksRemaining = 0;
     locksActive = false;
     armorActive = false;
+    hackPending = false;
+    hackTarget = Symbol::SWORD;
+    heldReelIndex = -1;
+    player.spinsSinceHold = 0;
     player.maxHp = static_cast<int>(player.maxHp * 1.1f); // +10% к макс HP
     player.hp = static_cast<int>(player.maxHp * 0.5f);   // Восстановление 50% HP
     player.isHpRed = false;
