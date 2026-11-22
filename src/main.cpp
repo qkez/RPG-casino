@@ -26,6 +26,9 @@ int main() {
                 continue;
             }
 
+            if (ui.robberyAnimationActive() || ui.robberyResultActive())
+                continue;
+
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 if (ui.isSelectingHold()) {
                     int selectedReel = ui.getReelIndexAt(event.mouseButton.x, event.mouseButton.y);
@@ -45,7 +48,7 @@ int main() {
                     bloodSpinPending = true;
                     ui.startBloodSpinAnimation(static_cast<int>(game.player.maxHp * 0.05f));
                 }
-                else if (btn == UIButton::ROBBERY) game.doRobbery();
+                else if (btn == UIButton::ROBBERY) ui.startRobberyAnimation();
                 else if (btn == UIButton::DEV_ROBBERY) {
                     game.prepareRobberyForTesting();
                     bloodSpinPending = false;
@@ -83,6 +86,13 @@ int main() {
             ui.draw(window, game);
         }
         window.display();
+
+        // Результат ограбления рассчитывается только после завершения заставки.
+        if (ui.takeRobberyAnimationFinished()) {
+            game.doRobbery();
+            const bool success = game.currentState == GameState::PLAYING;
+            ui.startRobberyResult(success, success ? game.player.balance : 0);
+        }
 
         // Сначала завершается анимация, затем применяются результаты спина.
         if (ui.takeSpinAnimationFinished()) {
