@@ -68,6 +68,7 @@ void GameLogic::spin() {
 
     // --- ЛОГИКА ДЖОКЕРА (🃏) ---
     int jokerCount = counts[static_cast<int>(Symbol::JOKER)];
+    bool jokerCoinMultiplier = false;
     if (jokerCount == 3) {
         currentBoss.hp = 1;
         lastMessage = "СУПЕР-ДЖЕКПОТ! ТРИ ДЖОКЕРА! Боссу остается 1 HP!";
@@ -75,7 +76,7 @@ void GameLogic::spin() {
     else {
         if (jokerCount == 2) {
             for (int i = 0; i < static_cast<int>(Symbol::JOKER); i++) {
-                if (counts[i] == 1) { counts[i] = 3; break; }
+                if (counts[i] == 1) { counts[i] = 3; jokerCoinMultiplier = (i == static_cast<int>(Symbol::COIN)); break; }
             }
         }
         else if (jokerCount == 1) {
@@ -137,9 +138,11 @@ void GameLogic::spin() {
             lastMessage = "ДЖЕКПОТ! ТРИ БАТАРЕЙКИ! Энергия восстановлена полностью!";
         }
         else if (counts[static_cast<int>(Symbol::COIN)] == 3) {
-            player.balance *= 2;
-            if (player.balance == 0) player.balance = 500;
-            lastMessage = "ДЖЕКПОТ! ТРИ МОНЕТЫ! Кредиты удвоены! Теперь у вас: " + std::to_string(player.balance);
+            player.balance *= (jokerCoinMultiplier ? 10 : 2);
+            if (player.balance == 0) player.balance = (jokerCoinMultiplier ? 2500 : 500);
+            lastMessage = jokerCoinMultiplier
+                ? "ДЖЕКПОТ! ДВА ДЖОКЕРА + МОНЕТА! Кредиты умножены на 10! Теперь у вас: " + std::to_string(player.balance)
+                : "ДЖЕКПОТ! ТРИ МОНЕТЫ! Кредиты удвоены! Теперь у вас: " + std::to_string(player.balance);
         }
         else if (counts[static_cast<int>(Symbol::DIAMOND)] == 3) {
             player.balance *= 10;
@@ -248,22 +251,22 @@ void GameLogic::bossTurn() {
         player.hp -= finalDamage;
         combatEvents.push_back({"-" + std::to_string(finalDamage) + " HP", false});
         lastMessage += isSpecial
-            ? " Босс нанес УЛЬТИМАТИВНЫЙ УДАР на " + std::to_string(finalDamage) + " урона!"
-            : " Босс нанес обычный удар на " + std::to_string(finalDamage) + " урона.";
+            ? " | Босс нанес УЛЬТИМАТИВНЫЙ УДАР на " + std::to_string(finalDamage) + " урона!"
+            : " | Босс нанес обычный удар на " + std::to_string(finalDamage) + " урона.";
     };
 
     // После начала зарядки босс пропускает два полных спина.
     // На следующем спине он выпускает ультимативную атаку.
     if (currentBoss.chargeTimer == 2 || currentBoss.chargeTimer == 1) {
         --currentBoss.chargeTimer;
-        lastMessage += " Босс заряжает ульту... Ход пропущен.";
+        lastMessage += " | Босс заряжает ульту... Ход пропущен.";
         if (currentBoss.chargeTimer == 0) currentBoss.chargeTimer = -1;
         return;
     }
     if (currentBoss.chargeTimer == -1) {
         // Состояние готовности сбрасывается ДО атаки, чтобы ульта не могла повториться.
         currentBoss.chargeTimer = 0;
-        lastMessage += " Босс выпускает ульту!";
+        lastMessage += " | Босс выпускает ульту!";
         takeBossAttack(currentBoss.specAtk, true);
         return;
     }
@@ -280,10 +283,10 @@ void GameLogic::bossTurn() {
     }
     else if (choice <= 70) {
         currentBoss.chargeTimer = 2;
-        lastMessage += " Босс начал заряжать ульту! Следующие два спина он не атакует.";
+        lastMessage += " | Босс начал заряжать ульту! Следующие два спина он не атакует.";
     }
     else {
-        lastMessage += " Босс выжидает и пропускает атаку.";
+        lastMessage += " | Босс выжидает и пропускает атаку.";
     }
 }
 void GameLogic::doBloodSpin() {
