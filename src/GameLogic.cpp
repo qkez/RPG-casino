@@ -1,5 +1,6 @@
 #include "GameLogic.h"
 #include <random>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <algorithm>
