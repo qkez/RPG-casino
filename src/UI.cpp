@@ -399,7 +399,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     newGameInner.setOutlineColor(sf::Color(180, 100, 40, 180));
     newGameInner.setOutlineThickness(1.f);
     window.draw(newGameInner);
-    drawCenteredButtonText("НОВАЯ ИГРА", newGameButton, 13, sf::Color(255, 190, 90));
+    drawCenteredButtonText("NEW GAME", newGameButton, 13, sf::Color(255, 190, 90));
 
     window.draw(saveButton);
     sf::RectangleShape saveInner(sf::Vector2f(92.f, 22.f));
