@@ -59,6 +59,8 @@ public:
     void loadGame();
 
 private:
+    int shieldBlocksRemaining = 0;
+    bool locksActive = false;
     void bossTurn();
     void checkWinOrLose();
     Symbol getRandomSymbol();
