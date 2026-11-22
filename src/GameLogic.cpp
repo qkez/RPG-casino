@@ -209,7 +209,7 @@ void GameLogic::spin() {
         }
         else if (counts[static_cast<int>(Symbol::MEDKIT)] == 2) {
             int oldHp = player.hp;
-            int heal = static_cast<int>(player.maxHp * 0.15f);
+            int heal = static_cast<int>(player.maxHp * 0.20f);
             player.hp += heal;
             if (player.hp > player.maxHp) player.hp = player.maxHp;
             int actualHeal = player.hp - oldHp;
@@ -412,15 +412,15 @@ void GameLogic::nextBoss() {
     heldReelIndex = -1;
     player.spinsSinceHold = 3; // Новый уровень начинается с доступного HOLD
     player.maxHp = static_cast<int>(player.maxHp * 1.1f); // +10% к макс HP
-    player.hp = static_cast<int>(player.maxHp * 0.5f);   // Восстановление 50% HP
+    player.hp = static_cast<int>(player.maxHp * 0.75f);  // Восстановление 75% HP
     player.isHpRed = false;
 
     if (bossIndex == 1) {
-        currentBoss = { "Дракончик", BossType::DRAGON, 16665, 16665, 333, 1332, 0, false };
+        currentBoss = { "Дракончик", BossType::DRAGON, 12345, 12345, 333, 1332, 0, false };
         lastMessage = "Босс повержен! Появился Дракончик!";
     }
     else if (bossIndex == 2) {
-        currentBoss = { "Няшка", BossType::CUTE_FINAL, 33330, 33330, 466, 1864, 0, false };
+        currentBoss = { "Няшка", BossType::CUTE_FINAL, 22777, 22777, 466, 1864, 0, false };
         lastMessage = "Дракончик повержен! Финальный босс - Няшка!";
     }
     else {
@@ -439,10 +439,10 @@ void GameLogic::setBossForTesting(int index) {
         currentBoss = { "Дикий Волк", BossType::WOLF, 6000, 6000, 200, 800, 0, false };
     }
     else if (bossIndex == 1) {
-        currentBoss = { "Дракончик", BossType::DRAGON, 16665, 16665, 333, 1332, 0, false };
+        currentBoss = { "Дракончик", BossType::DRAGON, 12345, 12345, 333, 1332, 0, false };
     }
     else {
-        currentBoss = { "Няшка", BossType::CUTE_FINAL, 33330, 33330, 466, 1864, 0, false };
+        currentBoss = { "Няшка", BossType::CUTE_FINAL, 22777, 22777, 466, 1864, 0, false };
     }
 
     // DEV-переход повторяет обычное повышение уровня: +10% max HP
@@ -450,7 +450,7 @@ void GameLogic::setBossForTesting(int index) {
     player.maxHp = 6666;
     for (int level = 0; level < bossIndex; ++level)
         player.maxHp = static_cast<int>(player.maxHp * 1.1f);
-    player.hp = static_cast<int>(player.maxHp * 0.5f);
+    player.hp = static_cast<int>(player.maxHp * 0.75f);
     player.isHpRed = false;
 
     currentState = GameState::PLAYING;
@@ -509,7 +509,7 @@ void GameLogic::prepareRobberyForTesting() {
 }
 
 void GameLogic::doRobbery() {
-    if (currentState != GameState::ROBBERY || player.balance > 0 || player.hp <= 0) {
+    if (currentState != GameState::ROBBERY || player.balance > 0) {
         lastMessage = "Ограбление сейчас недоступно.";
         return;
     }
