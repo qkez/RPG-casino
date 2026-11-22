@@ -144,7 +144,7 @@ void UI::drawWrappedText(sf::RenderWindow& window, const std::string& text, floa
         std::string candidate = currentLine.empty() ? word : currentLine + " " + word;
         line.setString(sf::String::fromUtf8(candidate.begin(), candidate.end()));
         if (!currentLine.empty() && line.getLocalBounds().width > maxWidth) {
-            wrapped += currentLine + "\\n";
+            wrapped += currentLine + "\n";
             currentLine = word;
         } else {
             currentLine = candidate;
