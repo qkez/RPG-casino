@@ -51,6 +51,7 @@ public:
     std::string lastMessage = "Добро пожаловать в Казино!";
     std::vector<CombatEvent> combatEvents;
     int spinCost = 250;
+    int heldReelIndex = -1; // Индекс удержанного барабана (-1 = нет захвата)
 
     // Действия игрока
     void spin();
