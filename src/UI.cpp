@@ -78,8 +78,15 @@ UI::UI() {
 
 void UI::startSpinAnimation() {
     isSpinning = true;
+    spinAnimationFinished = false;
     spinTimer.restart();
     frameTimer.restart();
+}
+
+bool UI::takeSpinAnimationFinished() {
+    if (!spinAnimationFinished) return false;
+    spinAnimationFinished = false;
+    return true;
 }
 
 void UI::triggerBloodFlash(int hpLost) {
@@ -121,6 +128,39 @@ void UI::drawText(sf::RenderWindow& window, const std::string& text, int x, int 
     }
 
     window.draw(sfText);
+}
+
+void UI::drawWrappedText(sf::RenderWindow& window, const std::string& text, float x, float y, float maxWidth, unsigned int size, sf::Color color) {
+    sf::Text line;
+    line.setFont(fontPixel);
+    line.setCharacterSize(size);
+    line.setFillColor(color);
+
+    std::string wrapped;
+    std::string currentLine;
+    std::string word;
+    auto appendWord = [&]() {
+        if (word.empty()) return;
+        std::string candidate = currentLine.empty() ? word : currentLine + " " + word;
+        line.setString(sf::String::fromUtf8(candidate.begin(), candidate.end()));
+        if (!currentLine.empty() && line.getLocalBounds().width > maxWidth) {
+            wrapped += currentLine + "\\n";
+            currentLine = word;
+        } else {
+            currentLine = candidate;
+        }
+        word.clear();
+    };
+
+    for (char ch : text) {
+        if (ch == ' ') appendWord();
+        else word += ch;
+    }
+    appendWord();
+    wrapped += currentLine;
+    line.setString(sf::String::fromUtf8(wrapped.begin(), wrapped.end()));
+    line.setPosition(x, y);
+    window.draw(line);
 }
 
 void UI::drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf::Color color) {
@@ -166,8 +206,8 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     drawText(window, game.currentBoss.name, 450, 80, 20, sf::Color::Magenta, false, true);
     drawText(window, "HP: " + std::to_string(game.currentBoss.hp) + "/" + std::to_string(game.currentBoss.maxHp), 450, 110, 18, sf::Color::White, false, false);
 
-    if (game.currentBoss.chargeTimer > 0) {
-        drawText(window, "ВНИМАНИЕ: СУПЕР-УДАР!", 450, 140, 20, sf::Color::Red, true, true);
+    if (game.currentBoss.chargeTimer != 0) {
+        drawText(window, game.currentBoss.chargeTimer == -1 ? "УЛЬТА ГОТОВА!" : "БОСС ЗАРЯЖАЕТ УЛЬТУ", 450, 140, 17, sf::Color::Red, true, true);
     }
 
     // Картинка текущего босса под его характеристиками
@@ -181,10 +221,17 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
 
     // --- 3. ЛОГ СООБЩЕНИЙ (сдвинут вниз под портреты) ---
     if (isSpinning) {
-        drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 50, 305, 18, sf::Color::Cyan, false, false);
+        drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 50, 305, 16, sf::Color::Cyan, false, false);
     }
     else {
-        drawText(window, game.lastMessage, 50, 305, 18, sf::Color::White, false, false);
+        drawWrappedText(window, game.lastMessage, 50.f, 298.f, 700.f, 14, sf::Color::White);
+    }
+
+    // Короткие боевые уведомления рядом с героем.
+    for (std::size_t i = 0; i < game.combatEvents.size() && i < 3; ++i) {
+        sf::Color eventColor = game.combatEvents[i].positive
+            ? sf::Color(80, 255, 120) : sf::Color(255, 90, 90);
+        drawWrappedText(window, game.combatEvents[i].text, 190.f, 185.f + static_cast<float>(i) * 25.f, 235.f, 15, eventColor);
     }
 
     // --- 4. БАРАБАНЫ С КАРТИНКАМИ И АНИМАЦИЕЙ (сдвинуты вниз) ---
@@ -198,13 +245,14 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         }
         if (elapsed >= 1.5f) {
             isSpinning = false;
+            spinAnimationFinished = true;
         }
     }
 
     for (int i = 0; i < 3; i++) {
         float boxX = 150.f + i * 160.f;
-        float boxY = 350.f;
-        float boxSize = 120.f;
+        float boxY = 360.f;
+        float boxSize = 110.f;
 
         sf::RectangleShape reelBox(sf::Vector2f(boxSize, boxSize));
         reelBox.setPosition(boxX, boxY);
