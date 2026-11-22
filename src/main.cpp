@@ -4,7 +4,6 @@
 
 int main() {
     bool bloodSpinPending = false;
-    int bloodSpinHpBefore = 0;
     sf::RenderWindow window(sf::VideoMode(800, 600), "Cyberpunk RPG Casino");
 
     GameLogic game;
@@ -23,7 +22,6 @@ int main() {
                     ui.startSpinAnimation();
                 }
                 else if (btn == UIButton::BLOOD_SPIN) {
-                    bloodSpinHpBefore = game.player.hp;
                     bloodSpinPending = true;
                     ui.startSpinAnimation();
                 }
