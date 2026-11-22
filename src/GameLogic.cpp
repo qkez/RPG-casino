@@ -498,6 +498,8 @@ void GameLogic::loadGame() {
           >> loadedBoss.atk >> loadedBoss.specAtk >> loadedBoss.chargeTimer
           >> loadedBoss.isBlocking)) return;
     if (!(in >> std::quoted(loadedBoss.name))) return;
+    // Миграция старых сохранений после переименования финального босса.
+    if (loadedBoss.name == "Милашка") loadedBoss.name = "Няшка";
     loadedBoss.type = static_cast<BossType>(bossType);
     if (!(in >> state >> loadedSpinCost >> loadedHold)) return;
     for (int i = 0; i < 3; ++i) if (!(in >> reelValues[i])) return;
