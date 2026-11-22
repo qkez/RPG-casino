@@ -64,7 +64,9 @@ UI::UI() {
 
     hackButton.setSize(sf::Vector2f(100, 40));
     hackButton.setPosition(750, 650);
-    hackButton.setFillColor(sf::Color(0, 255, 255));
+    hackButton.setFillColor(sf::Color(25, 20, 40));
+    hackButton.setOutlineColor(sf::Color(255, 0, 170));
+    hackButton.setOutlineThickness(2.f);
 
     bloodSpinButton.setSize(sf::Vector2f(200, 50));
     bloodSpinButton.setPosition(400, 650);
@@ -350,7 +352,13 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         if (holdSelectionMode) drawText(window, "КЛИКНИ БАРАБАН", 140, 625, 12, sf::Color(255, 220, 70), false, true);
 
         window.draw(hackButton);
-        drawText(window, "HACK", 765, 660, 18, sf::Color::Black, false, true);
+        sf::RectangleShape hackInner(sf::Vector2f(92.f, 32.f));
+        hackInner.setPosition(754.f, 654.f);
+        hackInner.setFillColor(sf::Color::Transparent);
+        hackInner.setOutlineColor(sf::Color(120, 50, 220, 200));
+        hackInner.setOutlineThickness(1.f);
+        window.draw(hackInner);
+        drawText(window, "HACK", 765, 660, 18, sf::Color(255, 80, 210), false, true);
     }
     else if (game.currentState == GameState::BLOOD_SPIN) {
         window.draw(bloodSpinButton);
