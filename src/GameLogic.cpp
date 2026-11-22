@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <string>
 #include <iomanip>
+#include <cstdio>
 
 // ==========================================
 // КОНСТРУКТОР
@@ -487,4 +488,25 @@ void GameLogic::loadGame() {
     hackTarget = static_cast<Symbol>(loadedHackTarget);
     lastMessage = loadedMessage;
     combatEvents = loadedEvents;
+}
+
+// Сброс прогресса и создание новой игры
+void GameLogic::restartGame() {
+    player = { 6666, 6666, 3427, 0, 100, false, 0 };
+    currentBoss = { "Дикий Волк", BossType::WOLF, 6000, 6000, 200, 800, 0, false };
+    bossIndex = 0;
+    reels[0] = Symbol::SWORD;
+    reels[1] = Symbol::COIN;
+    reels[2] = Symbol::SKULL;
+    currentState = GameState::PLAYING;
+    lastMessage = "Новая игра! Сделайте первый спин.";
+    combatEvents.clear();
+    spinCost = 250;
+    heldReelIndex = -1;
+    shieldBlocksRemaining = 0;
+    locksActive = false;
+    armorActive = false;
+    hackPending = false;
+    hackTarget = Symbol::JOKER;
+    std::remove("savegame.txt");
 }
