@@ -15,6 +15,14 @@ int main() {
             if (event.type == sf::Event::Closed) window.close();
 
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                if (ui.isSelectingHold()) {
+                    int selectedReel = ui.getReelIndexAt(event.mouseButton.x, event.mouseButton.y);
+                    if (selectedReel >= 0) {
+                        game.holdReel(selectedReel);
+                        ui.cancelHoldSelection();
+                        continue;
+                    }
+                }
                 UIButton btn = ui.getClickedButton(event.mouseButton.x, event.mouseButton.y, game.currentState);
 
                 if (btn == UIButton::SPIN) {
@@ -30,7 +38,7 @@ int main() {
                     game.saveGame();
                     window.close();
                 }
-                else if (btn == UIButton::HOLD) game.holdReel(0);
+                else if (btn == UIButton::HOLD) ui.armHoldSelection();
                 else if (btn == UIButton::HACK) game.useHack(Symbol::JOKER);
             }
         }
