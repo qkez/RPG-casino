@@ -88,7 +88,10 @@ void GameLogic::spin() {
                     else secondSingle=i;
                 }
             }
-            if (pairedSymbol!=-1) counts[pairedSymbol]=3;
+            if (pairedSymbol!=-1) {
+                counts[pairedSymbol]=3;
+                jokerCoinMultiplier = (pairedSymbol == static_cast<int>(Symbol::COIN));
+            }
             else if (firstSingle!=-1 && secondSingle!=-1) {
                 auto comboScore=[this](int symbol) {
                     const bool playerInDanger=player.hp<=player.maxHp/2;
