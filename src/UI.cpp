@@ -146,6 +146,26 @@ bool UI::takeSpinAnimationFinished() {
     return true;
 }
 
+void UI::startLevelTransition() {
+    levelTransitionIsActive = true;
+    levelTransitionClock.restart();
+    transitionReelClock.restart();
+    transitionReels[0] = Symbol::COIN;
+    transitionReels[1] = Symbol::JOKER;
+    transitionReels[2] = Symbol::SWORD;
+    holdSelectionMode = false;
+    isSpinning = false;
+    bloodSpinDelay = false;
+}
+
+bool UI::levelTransitionActive() const {
+    return levelTransitionIsActive;
+}
+
+void UI::finishLevelTransition() {
+    levelTransitionIsActive = false;
+}
+
 void UI::triggerBloodFlash(int hpLost) {
     isBloodFlashing = true;
     bloodHpLost = hpLost;
@@ -576,6 +596,161 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         }
         else {
             isBloodFlashing = false;
+        }
+    }
+
+    if (levelTransitionIsActive)
+        drawLevelTransition(window, game);
+}
+
+void UI::drawLevelTransition(sf::RenderWindow& window, const GameLogic& game) {
+    const float elapsed = levelTransitionClock.getElapsedTime().asSeconds();
+    const float duration = 6.8f;
+    if (elapsed >= duration) {
+        levelTransitionIsActive = false;
+        return;
+    }
+
+    // Затемняем текущий интерфейс, сохраняя его под заставкой.
+    sf::RectangleShape shade(sf::Vector2f(1000.f, 750.f));
+    shade.setFillColor(sf::Color(3, 2, 6, 242));
+    window.draw(shade);
+
+    auto centered = [&](const std::string& value, float y, unsigned int size,
+                        sf::Color color, bool mainFont = true, float centerX = 500.f) {
+        sf::Text text;
+        text.setFont(mainFont ? fontMain : fontPixel);
+        text.setString(sf::String::fromUtf8(value.begin(), value.end()));
+        text.setCharacterSize(size);
+        text.setFillColor(color);
+        const sf::FloatRect bounds = text.getLocalBounds();
+        text.setOrigin(bounds.left + bounds.width / 2.f, bounds.top + bounds.height / 2.f);
+        text.setPosition(centerX, y);
+        window.draw(text);
+    };
+
+    auto glitchBar = [&](float y, float width, sf::Uint8 alpha) {
+        sf::RectangleShape bar(sf::Vector2f(width, 2.f + static_cast<float>(rand() % 4)));
+        bar.setPosition(static_cast<float>(rand() % 1000), y);
+        bar.setFillColor(sf::Color(255, 15, 45, alpha));
+        window.draw(bar);
+    };
+
+    // Короткие CRT scanlines объединяют переход со стартовой заставкой.
+    for (int y = 0; y < 750; y += 6) {
+        sf::RectangleShape line(sf::Vector2f(1000.f, 1.f));
+        line.setPosition(0.f, static_cast<float>(y));
+        line.setFillColor(sf::Color(0, 0, 0, 65));
+        window.draw(line);
+    }
+
+    if (elapsed < 1.15f) {
+        if (elapsed < 0.16f || (rand() % 100 < 12)) {
+            sf::RectangleShape flash(sf::Vector2f(1000.f, 750.f));
+            flash.setFillColor(sf::Color(180, 0, 20, elapsed < 0.16f ? 75 : 25));
+            window.draw(flash);
+        }
+        centered("VICTORY", 300.f, 66, sf::Color(255, 35, 55));
+        centered("TARGET ELIMINATED", 365.f, 19, sf::Color(210, 70, 85), false);
+        if (rand() % 100 < 45) {
+            glitchBar(275.f + static_cast<float>(rand() % 100), 260.f + static_cast<float>(rand() % 500), 190);
+            centered("// SIGNAL INTERRUPTED //", 420.f, 14, sf::Color(190, 35, 55), false);
+        }
+    }
+    else if (elapsed < 2.35f) {
+        centered("WARNING", 260.f, 22, sf::Color(255, 90, 100), false);
+        centered("SYSTEM OVERRIDE", 335.f, 48, sf::Color(255, 25, 55));
+        centered("UNAUTHORIZED PROGRESSION", 395.f, 16, sf::Color(190, 55, 70), false);
+        for (int i = 0; i < 9; ++i)
+            glitchBar(static_cast<float>(rand() % 750), 180.f + static_cast<float>(rand() % 650), 150);
+    }
+    else if (elapsed < 3.75f) {
+        if (transitionReelClock.getElapsedTime().asSeconds() > 0.055f) {
+            for (int i = 0; i < 3; ++i)
+                transitionReels[i] = static_cast<Symbol>(rand() % 10);
+            transitionReelClock.restart();
+        }
+        centered("REINITIALIZING GAME STATE", 300.f, 18, sf::Color(220, 65, 80), false);
+        for (int i = 0; i < 3; ++i) {
+            const float x = 320.f + i * 125.f;
+            sf::RectangleShape reel(sf::Vector2f(105.f, 105.f));
+            reel.setPosition(x, 350.f);
+            reel.setFillColor(sf::Color(12, 7, 14));
+            reel.setOutlineColor(sf::Color(255, 25, 60));
+            reel.setOutlineThickness(3.f);
+            window.draw(reel);
+
+            const Symbol symbol = transitionReels[i];
+            auto found = symbolTextures.find(symbol);
+            if (found != symbolTextures.end() && found->second.getSize().x > 0) {
+                sf::Sprite sprite(found->second);
+                const sf::Vector2u size = found->second.getSize();
+                sprite.setScale(82.f / size.x, 82.f / size.y);
+                sprite.setPosition(x + 11.f, 361.f);
+                window.draw(sprite);
+            } else {
+                centered(getSymbolString(symbol), 402.f, 24, sf::Color::White, true, x + 52.f);
+            }
+        }
+        centered(" // RANDOMIZING NEXT TARGET // ", 500.f, 13, sf::Color(170, 35, 55), false);
+        for (int i = 0; i < 5; ++i)
+            glitchBar(340.f + static_cast<float>(rand() % 130), 100.f + static_cast<float>(rand() % 300), 120);
+    }
+    else {
+        const bool reveal = elapsed >= 5.35f;
+        const float scanProgress = (elapsed - 3.75f) / 1.6f;
+        const bool finalScreen = reveal;
+        const BossType type = game.currentBoss.type;
+        auto boss = bossTextures.find(type);
+
+        if (!finalScreen) {
+            centered("SEARCHING NEXT TARGET...", 185.f, 20, sf::Color(255, 55, 75), false);
+            centered("TARGET FOUND", 590.f, 17, sf::Color(220, 65, 85), false);
+        } else {
+            centered("LEVEL " + (game.bossIndex + 1 < 10 ? std::string("0") : std::string())
+                     + std::to_string(game.bossIndex + 1), 145.f, 48, sf::Color(255, 35, 60));
+            centered("NEW THREAT DETECTED", 205.f, 17, sf::Color(220, 65, 85), false);
+            centered(game.currentBoss.name, 625.f, 30, sf::Color(255, 90, 120));
+            centered("THE HOUSE GETS STRONGER", 675.f, 13, sf::Color(175, 45, 65), false);
+        }
+
+        if (boss != bossTextures.end() && boss->second.getSize().x > 0) {
+            sf::Sprite sprite(boss->second);
+            const sf::Vector2u size = boss->second.getSize();
+            const float scale = std::min(300.f / static_cast<float>(size.x),
+                                         340.f / static_cast<float>(size.y));
+            sprite.setScale(scale, scale);
+            const sf::FloatRect bounds = sprite.getGlobalBounds();
+            sprite.setPosition(500.f - bounds.width / 2.f, 390.f - bounds.height / 2.f);
+            if (!finalScreen) {
+                const sf::Uint8 alpha = static_cast<sf::Uint8>(55.f + 150.f * std::max(0.f, std::min(1.f, scanProgress)));
+                sprite.setColor(sf::Color(255, 35, 55, alpha));
+            }
+            window.draw(sprite);
+        } else {
+            centered("/// UNKNOWN ENTITY ///", 390.f, 23, sf::Color(255, 35, 65), false);
+        }
+
+        if (!finalScreen) {
+            const float scanY = 230.f + std::max(0.f, std::min(1.f, scanProgress)) * 330.f;
+            sf::RectangleShape scanLine(sf::Vector2f(420.f, 3.f));
+            scanLine.setPosition(290.f, scanY);
+            scanLine.setFillColor(sf::Color(255, 20, 50, 220));
+            window.draw(scanLine);
+            sf::RectangleShape glow(sf::Vector2f(420.f, 15.f));
+            glow.setPosition(290.f, scanY - 6.f);
+            glow.setFillColor(sf::Color(255, 0, 35, 35));
+            window.draw(glow);
+            if (rand() % 100 < 35)
+                glitchBar(250.f + static_cast<float>(rand() % 300), 180.f + static_cast<float>(rand() % 500), 150);
+        } else {
+            // Последняя вспышка и плавное возвращение к игровому экрану.
+            const float fade = std::max(0.f, std::min(1.f, (elapsed - 6.25f) / 0.55f));
+            if (fade > 0.f) {
+                sf::RectangleShape revealOverlay(sf::Vector2f(1000.f, 750.f));
+                revealOverlay.setFillColor(sf::Color(3, 2, 6, static_cast<sf::Uint8>(242.f * (1.f - fade))));
+                window.draw(revealOverlay);
+            }
         }
     }
 }
