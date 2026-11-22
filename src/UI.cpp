@@ -244,20 +244,19 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         drawWrappedText(window, game.lastMessage, 45.f, 342.f, 910.f, 18, sf::Color(220, 240, 220));
     }
 
-    // История боевых событий в отдельной области: фиксированные строки
-    // без переноса, чтобы длинные сообщения не накладывались друг на друга.
+    // История боя перенесена вправо, чтобы не перекрывать портрет героя.
     if (!game.combatEvents.empty()) {
-        sf::RectangleShape eventPanel(sf::Vector2f(590.f, 88.f));
-        eventPanel.setPosition(30.f, 205.f);
+        sf::RectangleShape eventPanel(sf::Vector2f(390.f, 88.f));
+        eventPanel.setPosition(330.f, 205.f);
         eventPanel.setFillColor(sf::Color(20, 20, 35, 230));
         eventPanel.setOutlineColor(sf::Color(70, 70, 100));
         eventPanel.setOutlineThickness(1.f);
         window.draw(eventPanel);
-        drawText(window, "ИСТОРИЯ БОЯ", 42, 208, 12, sf::Color(180, 180, 210), false, true);
+        drawText(window, "ИСТОРИЯ БОЯ", 342, 208, 12, sf::Color(180, 180, 210), false, true);
         for (std::size_t i = 0; i < game.combatEvents.size() && i < 3; ++i) {
             sf::Color eventColor = game.combatEvents[i].positive
                 ? sf::Color(80, 255, 120) : sf::Color(255, 90, 90);
-            drawText(window, game.combatEvents[i].text, 42, 228 + static_cast<int>(i) * 20, 13, eventColor, false, false);
+            drawText(window, game.combatEvents[i].text, 342, 228 + static_cast<int>(i) * 20, 13, eventColor, false, false);
         }
     }
 
