@@ -36,7 +36,6 @@ int main() {
                 else if (btn == UIButton::ROBBERY) game.doRobbery();
                 else if (btn == UIButton::SAVE_EXIT) {
                     game.saveGame();
-                    window.close();
                 }
                 else if (btn == UIButton::HOLD) ui.armHoldSelection();
                 else if (btn == UIButton::HACK) game.useHack(Symbol::JOKER);
