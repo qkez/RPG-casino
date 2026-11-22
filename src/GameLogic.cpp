@@ -59,7 +59,7 @@ void GameLogic::spin() {
     reels[1] = getRandomSymbol();
     reels[2] = getRandomSymbol();
     if (hackPending) {
-        const hackedReel = rand() % 3;
+        const int hackedReel = rand() % 3;
         reels[hackedReel] = hackTarget;
         hackPending = false;
         combatEvents.push_back({"HACK: один барабан подменён на ДЖОКЕРА", true});
