@@ -132,6 +132,8 @@ void GameLogic::spin() {
             currentBoss.hp -= dmg;
             if (currentBoss.hp < 0) currentBoss.hp = 0;
             lastMessage = "ДЖЕКПОТ! ТРИ МЕЧА! Урон боссу: " + std::to_string(dmg);
+            if (currentBoss.type == BossType::DRAGON && currentBoss.isBlocking)
+                lastMessage += " КРИТИЧЕСКИЙ ПРОБОЙ: мечи пробили блок крыльев!";
         }
         else if (counts[static_cast<int>(Symbol::BOMB)] == 3) {
             int dmg = static_cast<int>(currentBoss.maxHp * 0.50f);
@@ -180,9 +182,16 @@ void GameLogic::spin() {
         // --- ОБЫЧНЫЕ ВЫПАДЕНИЯ (ДВОЙКИ) ---
         else if (counts[static_cast<int>(Symbol::SWORD)] == 2) {
             int dmg = static_cast<int>(currentBoss.maxHp * 0.10f);
+            if (currentBoss.type == BossType::DRAGON && currentBoss.isBlocking) {
+                dmg /= 2;
+                lastMessage = "Дракончик закрылся крыльями! Урон мечей снижен вдвое: ";
+            }
+            else {
+                lastMessage = "2 меча! Урон боссу: ";
+            }
             currentBoss.hp -= dmg;
             if (currentBoss.hp < 0) currentBoss.hp = 0;
-            lastMessage = "2 меча! Урон боссу: " + std::to_string(dmg);
+            lastMessage += std::to_string(dmg);
         }
         else if (counts[static_cast<int>(Symbol::BOMB)] == 2) {
             int dmg = static_cast<int>(currentBoss.maxHp * 0.10f);
@@ -231,6 +240,10 @@ void GameLogic::spin() {
             lastMessage = "Комбинация не собрана. Босс может атаковать!";
         }
     }
+
+    // Блок крыльями защищает только от следующего спина игрока.
+    // Тройной меч пробивает его, двойной наносит половину урона.
+    if (currentBoss.type == BossType::DRAGON) currentBoss.isBlocking = false;
 
     bossTurn();       // Босс отвечает
     checkWinOrLose(); // Проверяем, не умер ли кто-то
@@ -293,7 +306,25 @@ void GameLogic::bossTurn() {
     const int choice = action(gen);
 
     if (choice <= 45) {
-        takeBossAttack(currentBoss.atk, false);
+        // Уникальные способности заменяют обычную атаку, не меняя
+        // общие вероятности атаки, зарядки ульты и пропуска хода.
+        std::uniform_int_distribution<> specialChance(1, 100);
+        const int specialRoll = specialChance(gen);
+
+        if (currentBoss.type == BossType::DRAGON && specialRoll <= 20) {
+            currentBoss.isBlocking = true;
+            combatEvents.push_back({"ДРАКОНЧИК ЗАКРЫЛСЯ КРЫЛЬЯМИ: двойные мечи наносят половину урона, тройные пробивают блок", true});
+            lastMessage += " | Дракончик расправил крылья и готовится блокировать следующий удар!";
+        }
+        else if (currentBoss.type == BossType::CUTE_FINAL && specialRoll <= 20 && player.balance > 0) {
+            const int stolen = std::max(1, player.balance / 10);
+            player.balance -= stolen;
+            combatEvents.push_back({"НЯШКА УКРАЛА -" + std::to_string(stolen) + " КРЕДИТОВ", false});
+            lastMessage += " | Няшка вместо атаки украла " + std::to_string(stolen) + " кредитов!";
+        }
+        else {
+            takeBossAttack(currentBoss.atk, false);
+        }
     }
     else if (choice <= 70) {
         currentBoss.chargeTimer = 2;
@@ -410,6 +441,14 @@ void GameLogic::setBossForTesting(int index) {
         currentBoss = { "Няшка", BossType::CUTE_FINAL, 33330, 33330, 466, 1864, 0, false };
     }
 
+    // DEV-переход повторяет обычное повышение уровня: +10% max HP
+    // за каждый пройденный уровень и восстановление до 50% HP.
+    player.maxHp = 6666;
+    for (int level = 0; level < bossIndex; ++level)
+        player.maxHp = static_cast<int>(player.maxHp * 1.1f);
+    player.hp = static_cast<int>(player.maxHp * 0.5f);
+    player.isHpRed = false;
+
     currentState = GameState::PLAYING;
     heldReelIndex = -1;
     shieldBlocksRemaining = 0;
@@ -455,7 +494,37 @@ void GameLogic::useHack(Symbol targetSymbol) {
     hackPending = true;
     lastMessage = "HACK активирован! Следующий спин гарантированно даст 1 Джокера. -40 энергии.";
 }
-void GameLogic::doRobbery() {}
+void GameLogic::prepareRobberyForTesting() {
+    // DEV-кнопка принудительно открывает сценарий ограбления.
+    player.hp = 1;
+    player.balance = 0;
+    player.isHpRed = true;
+    currentState = GameState::ROBBERY;
+    combatEvents.clear();
+    lastMessage = "DEV: тест ограбления. Шанс успеха — 50%.";
+}
+
+void GameLogic::doRobbery() {
+    if (currentState != GameState::ROBBERY || player.balance > 0 || player.hp <= 0) {
+        lastMessage = "Ограбление сейчас недоступно.";
+        return;
+    }
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> outcome(1, 100);
+
+    if (outcome(gen) <= 50) {
+        player.balance = std::max(1, robberyReward);
+        currentState = GameState::PLAYING;
+        combatEvents.push_back({"+" + std::to_string(player.balance) + " КРЕДИТОВ: ограбление удалось", true});
+        lastMessage = "ОГРАБЛЕНИЕ УДАЛОСЬ! Вы унесли " + std::to_string(player.balance) + " кредитов.";
+    }
+    else {
+        currentState = GameState::GAME_OVER;
+        lastMessage = "ОГРАБЛЕНИЕ ПРОВАЛИЛОСЬ. ОХРАНА ПОЙМАЛА ВАС. GAME OVER.";
+    }
+}
 
 void GameLogic::saveGame() {
     std::ofstream out("savegame.txt");
