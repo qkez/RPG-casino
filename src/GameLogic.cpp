@@ -376,12 +376,16 @@ void GameLogic::doBloodSpin() {
 // ==========================================
 void GameLogic::checkWinOrLose() {
     if (player.hp <= 0) {
-        player.hp = 0;
         if (player.balance <= 0) {
-            currentState = GameState::ROBBERY; // Последний шанс
-            lastMessage = "Вы на грани! Попробуйте ограбить казино!";
+            // Ограбление — последний шанс: игроку оставляется 1 HP,
+            // чтобы нажатие кнопки не блокировалось проверкой смерти.
+            player.hp = 1;
+            player.isHpRed = true;
+            currentState = GameState::ROBBERY;
+            lastMessage = "Вы на грани! Остался 1 HP. Попробуйте ограбить казино!";
         }
         else {
+            player.hp = 0;
             currentState = GameState::GAME_OVER;
             lastMessage = "Вы погибли. Игра окончена.";
         }
