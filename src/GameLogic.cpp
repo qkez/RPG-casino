@@ -55,11 +55,12 @@ void GameLogic::spin() {
     player.spinsSinceHold++;    // Счетчик для захвата (Hold)
 
     // Крутим барабаны. Активный HACK гарантирует один выбранный символ.
-    reels[0] = getRandomSymbol();
-    reels[1] = getRandomSymbol();
-    reels[2] = getRandomSymbol();
+    for (int i = 0; i < 3; ++i) {
+        if (i != heldReelIndex) reels[i] = getRandomSymbol();
+    }
     if (hackPending) {
-        const int hackedReel = rand() % 3;
+        int hackedReel = rand() % 3;
+        if (hackedReel == heldReelIndex) hackedReel = (hackedReel + 1) % 3;
         reels[hackedReel] = hackTarget;
         hackPending = false;
         combatEvents.push_back({"HACK: один барабан подменён на ДЖОКЕРА", true});
@@ -230,6 +231,7 @@ void GameLogic::spin() {
 
     bossTurn();       // Босс отвечает
     checkWinOrLose(); // Проверяем, не умер ли кто-то
+    heldReelIndex = -1; // Захват действует только на один спин
 }
 
 // ==========================================
@@ -385,7 +387,15 @@ void GameLogic::nextBoss() {
 // ==========================================
 // ЗАГЛУШКИ (Пока не реализованы)
 // ==========================================
-void GameLogic::holdReel(int index) {}
+void GameLogic::holdReel(int index) {
+    if (currentState != GameState::PLAYING || index < 0 || index >= 3) return;
+    if (heldReelIndex != -1) {
+        lastMessage = "Барабан уже удерживается. Захват действует до следующего спина.";
+        return;
+    }
+    heldReelIndex = index;
+    lastMessage = "HOLD: барабан " + std::to_string(index + 1) + " удержан. Выберите SPIN.";
+}
 void GameLogic::useHack(Symbol targetSymbol) {
     const int hackCost = 40;
     if (currentState != GameState::PLAYING) return;
