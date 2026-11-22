@@ -52,27 +52,27 @@ UI::UI() {
     // if (bossTextures[BossType::CUTE_FINAL].loadFromFile("assets/cute.png")) bossTextures[BossType::CUTE_FINAL].setSmooth(false);
 
     spinButton.setSize(sf::Vector2f(150, 50));
-    spinButton.setPosition(325, 525);
+    spinButton.setPosition(425, 650);
     spinButton.setFillColor(sf::Color(0, 255, 100));
 
     holdButton.setSize(sf::Vector2f(100, 40));
-    holdButton.setPosition(100, 525);
+    holdButton.setPosition(150, 650);
     holdButton.setFillColor(sf::Color(255, 215, 0));
 
     hackButton.setSize(sf::Vector2f(100, 40));
-    hackButton.setPosition(600, 525);
+    hackButton.setPosition(750, 650);
     hackButton.setFillColor(sf::Color(0, 255, 255));
 
     bloodSpinButton.setSize(sf::Vector2f(200, 50));
-    bloodSpinButton.setPosition(300, 525);
+    bloodSpinButton.setPosition(400, 650);
     bloodSpinButton.setFillColor(sf::Color(255, 0, 0));
 
     robberyButton.setSize(sf::Vector2f(200, 50));
-    robberyButton.setPosition(300, 525);
+    robberyButton.setPosition(400, 650);
     robberyButton.setFillColor(sf::Color(255, 100, 0));
 
     saveButton.setSize(sf::Vector2f(100, 30));
-    saveButton.setPosition(680, 10);
+    saveButton.setPosition(880, 10);
     saveButton.setFillColor(sf::Color(100, 100, 100));
 }
 
@@ -211,12 +211,12 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     }
 
     // --- 2. ИНФОРМАЦИЯ О БОССЕ ---
-    drawBar(window, 450, 50, game.currentBoss.hp, game.currentBoss.maxHp, sf::Color::Red);
-    drawText(window, game.currentBoss.name, 450, 80, 20, sf::Color::Magenta, false, true);
-    drawText(window, "HP: " + std::to_string(game.currentBoss.hp) + "/" + std::to_string(game.currentBoss.maxHp), 450, 110, 18, sf::Color::White, false, false);
+    drawBar(window, 650, 50, game.currentBoss.hp, game.currentBoss.maxHp, sf::Color::Red);
+    drawText(window, game.currentBoss.name, 650, 80, 20, sf::Color::Magenta, false, true);
+    drawText(window, "HP: " + std::to_string(game.currentBoss.hp) + "/" + std::to_string(game.currentBoss.maxHp), 650, 110, 18, sf::Color::White, false, false);
 
     if (game.currentBoss.chargeTimer != 0) {
-        drawText(window, game.currentBoss.chargeTimer == -1 ? "УЛЬТА ГОТОВА!" : "БОСС ЗАРЯЖАЕТ УЛЬТУ", 450, 140, 17, sf::Color::Red, true, true);
+        drawText(window, game.currentBoss.chargeTimer == -1 ? "УЛЬТА ГОТОВА!" : "БОСС ЗАРЯЖАЕТ УЛЬТУ", 650, 140, 17, sf::Color::Red, true, true);
     }
 
     // Картинка текущего босса под его характеристиками
@@ -224,7 +224,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         sf::Texture& bTex = bossTextures[game.currentBoss.type];
         sf::Sprite bossSprite(bTex);
         bossSprite.setScale(125.f / bTex.getSize().x, 125.f / bTex.getSize().y);
-        bossSprite.setPosition(450.f, 165.f);
+        bossSprite.setPosition(650.f, 165.f);
         window.draw(bossSprite);
     }
 
@@ -233,21 +233,21 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 50, 305, 16, sf::Color::Cyan, false, false);
     }
     else {
-        sf::RectangleShape logPanel(sf::Vector2f(740.f, 72.f));
-        logPanel.setPosition(30.f, 280.f);
+        sf::RectangleShape logPanel(sf::Vector2f(940.f, 110.f));
+        logPanel.setPosition(30.f, 330.f);
         logPanel.setFillColor(sf::Color(25, 25, 40));
         logPanel.setOutlineColor(sf::Color(90, 90, 120));
         logPanel.setOutlineThickness(1.f);
         window.draw(logPanel);
-        drawText(window, "РЕЗУЛЬТАТ СПИНА", 45, 285, 12, sf::Color(80, 255, 120), false, true);
-        drawWrappedText(window, game.lastMessage, 45.f, 300.f, 710.f, 14, sf::Color(220, 240, 220));
+        drawText(window, "РЕЗУЛЬТАТ СПИНА", 45, 335, 12, sf::Color(80, 255, 120), false, true);
+        drawWrappedText(window, game.lastMessage, 45.f, 355.f, 910.f, 18, sf::Color(220, 240, 220));
     }
 
     // Короткие боевые уведомления рядом с героем.
     for (std::size_t i = 0; i < game.combatEvents.size() && i < 3; ++i) {
         sf::Color eventColor = game.combatEvents[i].positive
             ? sf::Color(80, 255, 120) : sf::Color(255, 90, 90);
-        drawWrappedText(window, game.combatEvents[i].text, 190.f, 185.f + static_cast<float>(i) * 25.f, 235.f, 15, eventColor);
+        drawWrappedText(window, game.combatEvents[i].text, 350.f, 190.f + static_cast<float>(i) * 30.f, 300.f, 16, eventColor);
     }
 
     // --- 4. БАРАБАНЫ С КАРТИНКАМИ И АНИМАЦИЕЙ (сдвинуты вниз) ---
@@ -270,8 +270,8 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     }
 
     for (int i = 0; i < 3; i++) {
-        float boxX = 150.f + i * 160.f;
-        float boxY = 370.f;
+        float boxX = 250.f + i * 170.f;
+        float boxY = 475.f;
         float boxSize = 110.f;
 
         sf::RectangleShape reelBox(sf::Vector2f(boxSize, boxSize));
@@ -306,25 +306,25 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     // --- 5. КНОПКИ ---
     if (game.currentState == GameState::PLAYING) {
         window.draw(spinButton);
-        drawText(window, "SPIN", 365, 540, 24, sf::Color::Black, false, true);
+        drawText(window, "SPIN", 465, 665, 24, sf::Color::Black, false, true);
 
         window.draw(holdButton);
-        drawText(window, "HOLD", 115, 535, 18, sf::Color::Black, false, true);
+        drawText(window, "HOLD", 165, 660, 18, sf::Color::Black, false, true);
 
         window.draw(hackButton);
-        drawText(window, "HACK", 615, 535, 18, sf::Color::Black, false, true);
+        drawText(window, "HACK", 765, 660, 18, sf::Color::Black, false, true);
     }
     else if (game.currentState == GameState::BLOOD_SPIN) {
         window.draw(bloodSpinButton);
-        drawText(window, "КРОВАВЫЙ СПИН", 315, 540, 20, sf::Color::White, false, true);
+        drawText(window, "КРОВАВЫЙ СПИН", 415, 665, 20, sf::Color::White, false, true);
     }
     else if (game.currentState == GameState::ROBBERY) {
         window.draw(robberyButton);
-        drawText(window, "ОГРАБИТЬ КАЗИНО", 315, 540, 20, sf::Color::White, false, true);
+        drawText(window, "ОГРАБИТЬ КАЗИНО", 415, 665, 20, sf::Color::White, false, true);
     }
 
     window.draw(saveButton);
-    drawText(window, "SAVE", 705, 12, 14, sf::Color::White, false, true);
+    drawText(window, "SAVE", 905, 12, 14, sf::Color::White, false, true);
 
     // --- 6. АНИМАЦИЯ КРОВАВОЙ ВСПЫШКИ И ВЫЛЕТАЮЩИЙ ТЕКСТ ---
     if (isBloodFlashing) {
@@ -334,7 +334,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         if (flashElapsed < flashDuration) {
             float progress = 1.0f - (flashElapsed / flashDuration);
             sf::Uint8 bgAlpha = static_cast<sf::Uint8>(190 * progress);
-            sf::RectangleShape bloodOverlay(sf::Vector2f(800.f, 600.f));
+            sf::RectangleShape bloodOverlay(sf::Vector2f(1000.f, 750.f));
             bloodOverlay.setPosition(0.f, 0.f);
             bloodOverlay.setFillColor(sf::Color(180, 0, 0, bgAlpha));
             window.draw(bloodOverlay);
@@ -343,8 +343,8 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
             dmgText.setString("-" + std::to_string(bloodHpLost) + " HP");
             dmgText.setCharacterSize(48);
             sf::FloatRect textBounds = dmgText.getLocalBounds();
-            float textX = 400.f - (textBounds.width / 2.f);
-            float textY = 260.f - (flashElapsed * 60.f);
+            float textX = 500.f - (textBounds.width / 2.f);
+            float textY = 350.f - (flashElapsed * 60.f);
             dmgText.setPosition(textX, textY);
             sf::Uint8 textAlpha = static_cast<sf::Uint8>(255 * progress);
             dmgText.setFillColor(sf::Color(255, 255, 255, textAlpha));
