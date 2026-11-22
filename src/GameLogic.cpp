@@ -353,6 +353,9 @@ void GameLogic::checkWinOrLose() {
             currentState = GameState::GAME_OVER;
             lastMessage = "Вы погибли. Игра окончена.";
         }
+        // Смерть игрока имеет приоритет: победа над боссом не должна
+        // автоматически восстанавливать погибшего игрока на следующем уровне.
+        return;
     }
 
     if (currentBoss.hp <= 0) {
@@ -381,8 +384,8 @@ void GameLogic::nextBoss() {
         lastMessage = "Босс повержен! Появился Дракончик!";
     }
     else if (bossIndex == 2) {
-        currentBoss = { "Милашка", BossType::CUTE_FINAL, 33330, 33330, 466, 1864, 0, false };
-        lastMessage = "Дракончик повержен! Финальный босс - Милашка!";
+        currentBoss = { "Няшка", BossType::CUTE_FINAL, 33330, 33330, 466, 1864, 0, false };
+        lastMessage = "Дракончик повержен! Финальный босс - Няшка!";
     }
     else {
         currentState = GameState::WIN;
@@ -403,7 +406,7 @@ void GameLogic::setBossForTesting(int index) {
         currentBoss = { "Дракончик", BossType::DRAGON, 16665, 16665, 333, 1332, 0, false };
     }
     else {
-        currentBoss = { "Милашка", BossType::CUTE_FINAL, 33330, 33330, 466, 1864, 0, false };
+        currentBoss = { "Няшка", BossType::CUTE_FINAL, 33330, 33330, 466, 1864, 0, false };
     }
 
     currentState = GameState::PLAYING;
