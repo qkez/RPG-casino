@@ -23,6 +23,7 @@ int main() {
                 }
                 else if (btn == UIButton::BLOOD_SPIN) {
                     bloodSpinPending = true;
+                    ui.triggerBloodFlash(static_cast<int>(game.player.maxHp * 0.05f));
                     ui.startSpinAnimation();
                 }
                 else if (btn == UIButton::ROBBERY) game.doRobbery();
@@ -43,7 +44,6 @@ int main() {
         if (ui.takeSpinAnimationFinished()) {
             if (bloodSpinPending) {
                 game.doBloodSpin();
-                ui.triggerBloodFlash(static_cast<int>(game.player.maxHp * 0.05f));
                 bloodSpinPending = false;
             } else {
                 game.spin();
