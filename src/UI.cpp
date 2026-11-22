@@ -223,7 +223,7 @@ void UI::drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf:
 bool UI::introActive() const { return introIsActive; }
 
 void UI::handleIntroInput() {
-    if (introClock.getElapsedTime().asSeconds() >= 3.8f) introIsActive = false;
+    if (introClock.getElapsedTime().asSeconds() >= 4.25f) introIsActive = false;
 }
 
 void UI::drawIntro(sf::RenderWindow& window) {
