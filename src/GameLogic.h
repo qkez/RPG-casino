@@ -68,6 +68,8 @@ private:
     int shieldBlocksRemaining = 0;
     bool locksActive = false;
     bool armorActive = false;
+    bool hackPending = false;
+    Symbol hackTarget = Symbol::SWORD;
     void bossTurn();
     void checkWinOrLose();
     Symbol getRandomSymbol();
