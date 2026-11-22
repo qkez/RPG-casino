@@ -393,7 +393,12 @@ void GameLogic::holdReel(int index) {
         lastMessage = "Барабан уже удерживается. Захват действует до следующего спина.";
         return;
     }
+    if (player.spinsSinceHold < 3) {
+        lastMessage = "HOLD перезаряжается. Нужно сделать ещё " + std::to_string(3 - player.spinsSinceHold) + " спина.";
+        return;
+    }
     heldReelIndex = index;
+    player.spinsSinceHold = 0;
     lastMessage = "HOLD: барабан " + std::to_string(index + 1) + " удержан. Выберите SPIN.";
 }
 void GameLogic::useHack(Symbol targetSymbol) {
