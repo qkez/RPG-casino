@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-enum class UIButton { NONE, SPIN, HOLD, HACK, BLOOD_SPIN, ROBBERY, SAVE_EXIT, NEW_GAME, DEV_PREV, DEV_NEXT };
+enum class UIButton { NONE, SPIN, HOLD, HACK, BLOOD_SPIN, ROBBERY, SAVE_EXIT, NEW_GAME, DEV_PREV, DEV_NEXT, DEV_ROBBERY };
 
 class UI {
 public:
@@ -68,6 +68,7 @@ private:
     sf::RectangleShape newGameButton;
     sf::RectangleShape devPrevButton;
     sf::RectangleShape devNextButton;
+    sf::RectangleShape devRobberyButton;
 
     void drawLevelTransition(sf::RenderWindow& window, const GameLogic& game);
     void drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf::Color color);
