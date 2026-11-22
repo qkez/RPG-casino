@@ -219,6 +219,115 @@ void UI::drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf:
     window.draw(border);
 }
 
+
+bool UI::introActive() const { return introIsActive; }
+
+void UI::handleIntroInput() {
+    if (introClock.getElapsedTime().asSeconds() >= 3.8f) introIsActive = false;
+}
+
+void UI::drawIntro(sf::RenderWindow& window) {
+    float t = introClock.getElapsedTime().asSeconds();
+    window.clear(sf::Color(3, 2, 5));
+    auto centered = [&](const std::string& str, float y, unsigned size, sf::Color color, bool mainFont = true, float xCenter = 500.f) {
+        sf::Text txt;
+        txt.setFont(mainFont ? fontMain : fontPixel);
+        txt.setString(sf::String::fromUtf8(str.begin(), str.end()));
+        txt.setCharacterSize(size);
+        txt.setFillColor(color);
+        auto b = txt.getLocalBounds();
+        txt.setOrigin(b.left + b.width / 2.f, b.top + b.height / 2.f);
+        txt.setPosition(xCenter, y);
+        window.draw(txt);
+    };
+    auto glitchBar = [&](float y, float width, sf::Color color) {
+        sf::RectangleShape bar(sf::Vector2f(width, 2.f + static_cast<float>(rand() % 5)));
+        bar.setPosition(static_cast<float>(rand() % 1000), y);
+        bar.setFillColor(color);
+        window.draw(bar);
+    };
+
+    // Короткие вспышки и фрагменты заголовка до появления барабанов.
+    if (t > 0.45f && t < 3.45f) {
+        float flicker = (rand() % 100 < 18) ? 0.35f : 1.f;
+        sf::Color red(255, 35, 55, static_cast<sf::Uint8>(220 * flicker));
+        centered("THE HOUSE", 230.f, 42, red);
+        centered("ALWAYS WINS", 285.f, 38, sf::Color(190, 15, 30, static_cast<sf::Uint8>(220 * flicker)));
+        if (rand() % 100 < 35) {
+            glitchBar(220.f + static_cast<float>(rand() % 100), 250.f + static_cast<float>(rand() % 500), sf::Color(255, 0, 40, 180));
+            centered("// SIGNAL INTERRUPTED //", 330.f, 13, sf::Color(220, 40, 60), false);
+        }
+    }
+
+    // Барабаны прокручиваются, а затем фиксируют символы.
+    if (t >= 1.35f && t < 3.45f) {
+        if (introReelClock.getElapsedTime().asSeconds() > 0.075f) {
+            for (int i = 0; i < 3; ++i) introReels[i] = static_cast<Symbol>(rand() % 10);
+            introReelClock.restart();
+        }
+        centered("- - - - - - - - - - - - - - -", 390.f, 16, sf::Color(160, 20, 35), false);
+        for (int i = 0; i < 3; ++i) {
+            float x = 310.f + i * 130.f;
+            sf::RectangleShape box(sf::Vector2f(115.f, 115.f));
+            box.setPosition(x, 420.f);
+            box.setFillColor(sf::Color(12, 8, 15));
+            box.setOutlineColor(sf::Color(255, 25, 65));
+            box.setOutlineThickness(3.f);
+            window.draw(box);
+            if (symbolTextures.find(introReels[i]) != symbolTextures.end()) {
+                sf::Sprite s(symbolTextures[introReels[i]]);
+                auto sz = symbolTextures[introReels[i]].getSize();
+                s.setScale(90.f / sz.x, 90.f / sz.y);
+                s.setPosition(x + 12.f, 432.f);
+                window.draw(s);
+            } else centered(getSymbolString(introReels[i]), 475.f, 20, sf::Color::White, true, x + 57.f);
+        }
+    }
+
+    // Финальный сбой.
+    if (t >= 3.45f && t < 4.25f) {
+        sf::RectangleShape wash(sf::Vector2f(1000.f, 750.f));
+        wash.setFillColor(sf::Color(80, 0, 10, static_cast<sf::Uint8>(rand() % 65)));
+        window.draw(wash);
+        centered("!  SYSTEM ERROR  !", 335.f, 42, sf::Color(255, 30, 45));
+        centered("NO EXIT FOUND", 390.f, 24, sf::Color(180, 70, 90), false);
+        for (int i = 0; i < 12; ++i) glitchBar(static_cast<float>(rand() % 750), 200.f + static_cast<float>(rand() % 650), sf::Color(255, 0, 35, 170));
+    }
+
+    // Финальный экран ожидания.
+    if (t >= 4.25f) {
+        centered("CASINO", 290.f, 72, sf::Color(255, 35, 55));
+        centered("THE HOUSE ALWAYS WINS", 360.f, 20, sf::Color(160, 25, 40), false);
+        for (int i = 0; i < 3; ++i) {
+            float x = 310.f + i * 130.f;
+            sf::RectangleShape box(sf::Vector2f(115.f, 115.f));
+            box.setPosition(x, 410.f);
+            box.setFillColor(sf::Color(12, 8, 15));
+            box.setOutlineColor(sf::Color(180, 20, 40));
+            box.setOutlineThickness(2.f);
+            window.draw(box);
+            Symbol sym = (i == 0) ? Symbol::COIN : (i == 1 ? Symbol::JOKER : Symbol::SWORD);
+            if (symbolTextures.find(sym) != symbolTextures.end()) {
+                sf::Sprite s(symbolTextures[sym]);
+                auto sz = symbolTextures[sym].getSize();
+                s.setScale(90.f / sz.x, 90.f / sz.y);
+                s.setPosition(x + 12.f, 422.f);
+                window.draw(s);
+            }
+        }
+        if (static_cast<int>(t * 2.f) % 2 == 0) centered("PRESS ANY KEY TO ENTER", 590.f, 22, sf::Color(255, 170, 170), false);
+    }
+
+    // CRT scanlines и лёгкий шум по всему экрану.
+    for (int y = 0; y < 750; y += 5) {
+        sf::RectangleShape line(sf::Vector2f(1000.f, 1.f));
+        line.setPosition(0.f, static_cast<float>(y));
+        line.setFillColor(sf::Color(0, 0, 0, 55));
+        window.draw(line);
+    }
+    if (rand() % 100 < 25) glitchBar(static_cast<float>(rand() % 750), 300.f + static_cast<float>(rand() % 700), sf::Color(220, 0, 30, 80));
+}
+
 void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     // --- 1. ИНФОРМАЦИЯ ОБ ИГРОКЕ ---
     sf::Color hpColor = game.player.isHpRed ? sf::Color::Red : sf::Color::Green;
