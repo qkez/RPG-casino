@@ -3,6 +3,8 @@
 #include "UI.h"
 
 int main() {
+    bool bloodSpinPending = false;
+    int bloodSpinHpBefore = 0;
     sf::RenderWindow window(sf::VideoMode(800, 600), "Cyberpunk RPG Casino");
 
     GameLogic game;
@@ -17,14 +19,13 @@ int main() {
                 UIButton btn = ui.getClickedButton(event.mouseButton.x, event.mouseButton.y, game.currentState);
 
                 if (btn == UIButton::SPIN) {
-                    game.spin();
+                    bloodSpinPending = false;
                     ui.startSpinAnimation();
                 }
                 else if (btn == UIButton::BLOOD_SPIN) {
-                    int hpBefore = game.player.hp;
-                    game.doBloodSpin();
-                    int hpLost = hpBefore - game.player.hp;
-                    ui.triggerBloodFlash(hpLost);
+                    bloodSpinHpBefore = game.player.hp;
+                    bloodSpinPending = true;
+                    ui.startSpinAnimation();
                 }
                 else if (btn == UIButton::ROBBERY) game.doRobbery();
                 else if (btn == UIButton::SAVE_EXIT) {
@@ -39,6 +40,17 @@ int main() {
         window.clear(sf::Color(10, 10, 20));
         ui.draw(window, game);
         window.display();
+
+        // Сначала завершается анимация, затем применяются результаты спина.
+        if (ui.takeSpinAnimationFinished()) {
+            if (bloodSpinPending) {
+                game.doBloodSpin();
+                ui.triggerBloodFlash(bloodSpinHpBefore - game.player.hp);
+                bloodSpinPending = false;
+            } else {
+                game.spin();
+            }
+        }
     }
     return 0;
 }
