@@ -77,6 +77,18 @@ UI::UI() {
     saveButton.setFillColor(sf::Color(100, 100, 100));
 }
 
+void UI::armHoldSelection() { holdSelectionMode = true; }
+bool UI::isSelectingHold() const { return holdSelectionMode; }
+void UI::cancelHoldSelection() { holdSelectionMode = false; }
+int UI::getReelIndexAt(int mouseX, int mouseY) const {
+    for (int i = 0; i < 3; ++i) {
+        sf::FloatRect bounds(250.f + i * 170.f, 475.f, 110.f, 110.f);
+        if (bounds.contains(static_cast<float>(mouseX), static_cast<float>(mouseY)) && !isSpinning && !bloodSpinDelay)
+            return i;
+    }
+    return -1;
+}
+
 void UI::startSpinAnimation() {
     isSpinning = true;
     bloodSpinDelay = false;
@@ -273,7 +285,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     if (isSpinning) {
         if (frameTimer.getElapsedTime().asSeconds() > 0.06f) {
             for (int i = 0; i < 3; i++) {
-                fakeReels[i] = static_cast<Symbol>(rand() % 10);
+                if (i != game.heldReelIndex) fakeReels[i] = static_cast<Symbol>(rand() % 10);
             }
             frameTimer.restart();
         }
@@ -291,12 +303,12 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         sf::RectangleShape reelBox(sf::Vector2f(boxSize, boxSize));
         reelBox.setPosition(boxX, boxY);
         reelBox.setFillColor(sf::Color(15, 15, 25));
-        reelBox.setOutlineColor(sf::Color::Magenta);
+        reelBox.setOutlineColor(i == game.heldReelIndex ? sf::Color::Cyan : sf::Color::Magenta);
         reelBox.setOutlineThickness(3.f);
         window.draw(reelBox);
 
         Symbol symbolToShow = game.reels[i];
-        if (isSpinning && elapsed < (0.7f + i * 0.4f)) {
+        if (i != game.heldReelIndex && isSpinning && elapsed < (0.7f + i * 0.4f)) {
             symbolToShow = fakeReels[i];
         }
 
@@ -323,7 +335,8 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         drawText(window, "SPIN", 465, 665, 24, sf::Color::Black, false, true);
 
         window.draw(holdButton);
-        drawText(window, "HOLD", 165, 660, 18, sf::Color::Black, false, true);
+        drawText(window, holdSelectionMode ? "ВЫБЕРИ" : "HOLD", 155, 660, 18, sf::Color::Black, false, true);
+        if (holdSelectionMode) drawText(window, "КЛИКНИ БАРАБАН", 140, 625, 12, sf::Color::Cyan, false, true);
 
         window.draw(hackButton);
         drawText(window, "HACK", 765, 660, 18, sf::Color::Black, false, true);
