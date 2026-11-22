@@ -61,6 +61,7 @@ public:
 private:
     int shieldBlocksRemaining = 0;
     bool locksActive = false;
+    bool armorActive = false;
     void bossTurn();
     void checkWinOrLose();
     Symbol getRandomSymbol();
