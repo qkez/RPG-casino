@@ -51,6 +51,7 @@ public:
     std::string lastMessage = "Добро пожаловать в Казино!";
     std::vector<CombatEvent> combatEvents;
     int spinCost = 250;
+    int robberyReward = 2500; // Настраиваемая награда за успешное ограбление
     int heldReelIndex = -1; // Индекс удержанного барабана (-1 = нет захвата)
 
     // Действия игрока
@@ -59,6 +60,7 @@ public:
     void useHack(Symbol targetSymbol); // Взлом 
     void doBloodSpin();
     void doRobbery();
+    void prepareRobberyForTesting();
     void nextBoss(); // Переход на следующий уровень
 
     // Сохранение
