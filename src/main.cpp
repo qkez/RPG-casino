@@ -37,6 +37,11 @@ int main() {
                 else if (btn == UIButton::SAVE_EXIT) {
                     game.saveGame();
                 }
+                else if (btn == UIButton::NEW_GAME) {
+                    game.restartGame();
+                    bloodSpinPending = false;
+                    ui.cancelHoldSelection();
+                }
                 else if (btn == UIButton::HOLD) ui.armHoldSelection();
                 else if (btn == UIButton::HACK) game.useHack(Symbol::JOKER);
             }
