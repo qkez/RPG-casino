@@ -54,10 +54,16 @@ void GameLogic::spin() {
     player.balance -= spinCost; // Списываем деньги
     player.spinsSinceHold++;    // Счетчик для захвата (Hold)
 
-    // Крутим барабаны
+    // Крутим барабаны. Активный HACK гарантирует один выбранный символ.
     reels[0] = getRandomSymbol();
     reels[1] = getRandomSymbol();
     reels[2] = getRandomSymbol();
+    if (hackPending) {
+        const hackedReel = rand() % 3;
+        reels[hackedReel] = hackTarget;
+        hackPending = false;
+        combatEvents.push_back({"HACK: один барабан подменён на МЕЧ", true});
+    }
 
     // --- МАГИЯ ПОДСЧЕТА СИМВОЛОВ ---
     // Считаем, сколько раз выпал каждый символ (индексы 0-9)
@@ -380,7 +386,22 @@ void GameLogic::nextBoss() {
 // ЗАГЛУШКИ (Пока не реализованы)
 // ==========================================
 void GameLogic::holdReel(int index) {}
-void GameLogic::useHack(Symbol targetSymbol) {}
+void GameLogic::useHack(Symbol targetSymbol) {
+    const int hackCost = 40;
+    if (currentState != GameState::PLAYING) return;
+    if (hackPending) {
+        lastMessage = "HACK уже активирован и ждёт следующего спина.";
+        return;
+    }
+    if (player.energy < hackCost) {
+        lastMessage = "Для HACK нужно 40 энергии. Сейчас: " + std::to_string(player.energy) + ".";
+        return;
+    }
+    player.energy -= hackCost;
+    hackTarget = targetSymbol;
+    hackPending = true;
+    lastMessage = "HACK активирован! Следующий спин гарантированно даст 1 меч. -40 энергии.";
+}
 void GameLogic::doRobbery() {}
 void GameLogic::saveGame() {}
 void GameLogic::loadGame() {}
