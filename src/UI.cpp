@@ -231,7 +231,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
 
     // --- 3. ЛОГ СООБЩЕНИЙ (сдвинут вниз под портреты) ---
     if (isSpinning) {
-        drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 410, 315, 16, sf::Color::Cyan, false, false);
+        drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 385, 315, 16, sf::Color::Cyan, false, false);
     }
     else {
         sf::RectangleShape logPanel(sf::Vector2f(940.f, 125.f));
