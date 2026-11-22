@@ -34,7 +34,7 @@ struct Boss {
     int maxHp;
     int atk;
     int specAtk;
-    int chargeTimer = 0; // 0 - не заряжается, 1 - заряжается, 2 - ударит в след. раз
+    int chargeTimer = 0; // 0 - обычный режим, 2/1 - два спина зарядки, -1 - ульта готова
     bool isBlocking = false; // Для дракона
 };
 
