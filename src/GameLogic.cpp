@@ -239,11 +239,14 @@ void GameLogic::bossTurn() {
     // На следующем спине он выпускает ультимативную атаку.
     if (currentBoss.chargeTimer > 0) {
         --currentBoss.chargeTimer;
-        if (currentBoss.chargeTimer > 0) {
-            lastMessage += " Босс заряжает ульту... Он пропускает атаку.";
-            return;
+        lastMessage += " Босс заряжает ульту... Он пропускает атаку.";
+        if (currentBoss.chargeTimer == 0) {
+            currentBoss.chargeTimer = -1; // Зарядка завершена, ульта готова к следующему спину.
         }
-
+        return;
+    }
+    if (currentBoss.chargeTimer == -1) {
+        currentBoss.chargeTimer = 0;
         lastMessage += " Босс завершил зарядку!";
         takeBossAttack(currentBoss.specAtk, true);
         return;
