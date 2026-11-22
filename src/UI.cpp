@@ -143,6 +143,7 @@ void UI::drawWrappedText(sf::RenderWindow& window, const std::string& text, floa
     sf::Text line;
     line.setFont(fontPixel);
     line.setCharacterSize(size);
+    line.setLineSpacing(1.25f);
     line.setFillColor(color);
 
     std::string wrapped;
@@ -233,21 +234,21 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 50, 305, 16, sf::Color::Cyan, false, false);
     }
     else {
-        sf::RectangleShape logPanel(sf::Vector2f(940.f, 110.f));
-        logPanel.setPosition(30.f, 330.f);
+        sf::RectangleShape logPanel(sf::Vector2f(940.f, 125.f));
+        logPanel.setPosition(30.f, 315.f);
         logPanel.setFillColor(sf::Color(25, 25, 40));
         logPanel.setOutlineColor(sf::Color(90, 90, 120));
         logPanel.setOutlineThickness(1.f);
         window.draw(logPanel);
-        drawText(window, "РЕЗУЛЬТАТ СПИНА", 45, 335, 12, sf::Color(80, 255, 120), false, true);
-        drawWrappedText(window, game.lastMessage, 45.f, 355.f, 910.f, 18, sf::Color(220, 240, 220));
+        drawText(window, "РЕЗУЛЬТАТ СПИНА", 45, 320, 12, sf::Color(80, 255, 120), false, true);
+        drawWrappedText(window, game.lastMessage, 45.f, 342.f, 910.f, 18, sf::Color(220, 240, 220));
     }
 
     // Короткие боевые уведомления рядом с героем.
     for (std::size_t i = 0; i < game.combatEvents.size() && i < 3; ++i) {
         sf::Color eventColor = game.combatEvents[i].positive
             ? sf::Color(80, 255, 120) : sf::Color(255, 90, 90);
-        drawWrappedText(window, game.combatEvents[i].text, 350.f, 190.f + static_cast<float>(i) * 30.f, 300.f, 16, eventColor);
+        drawWrappedText(window, game.combatEvents[i].text, 220.f, 190.f + static_cast<float>(i) * 30.f, 260.f, 16, eventColor);
     }
 
     // --- 4. БАРАБАНЫ С КАРТИНКАМИ И АНИМАЦИЕЙ (сдвинуты вниз) ---
