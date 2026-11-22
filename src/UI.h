@@ -12,6 +12,7 @@ public:
     void draw(sf::RenderWindow& window, const GameLogic& game);
     UIButton getClickedButton(int mouseX, int mouseY, GameState currentState);
     void startSpinAnimation();
+    void startBloodSpinAnimation(int hpCost);
     bool takeSpinAnimationFinished();
     void triggerBloodFlash(int hpLost);
 
@@ -26,6 +27,8 @@ private:
     std::map<BossType, sf::Texture> bossTextures;
 
     bool isSpinning = false;
+    bool bloodSpinDelay = false;
+    sf::Clock bloodSpinDelayTimer;
     bool spinAnimationFinished = false;
     sf::Clock spinTimer;
     sf::Clock frameTimer;
