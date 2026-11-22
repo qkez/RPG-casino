@@ -40,8 +40,14 @@ void GameLogic::spin() {
 
     // Проверка на кровавый спин
     if (player.balance < spinCost) {
-        currentState = GameState::BLOOD_SPIN;
-        lastMessage = "Мало денег! Кровавый спин будет стоить " + std::to_string(static_cast<int>(player.maxHp * 0.05f)) + " HP.";
+        const int bloodCost = static_cast<int>(player.maxHp * 0.05f);
+        if (player.hp <= bloodCost) {
+            currentState = GameState::ROBBERY;
+            lastMessage = "Недостаточно HP для кровавого спина! Попробуйте ограбить казино.";
+        } else {
+            currentState = GameState::BLOOD_SPIN;
+            lastMessage = "Мало денег! Кровавый спин будет стоить " + std::to_string(bloodCost) + " HP.";
+        }
         return;
     }
 
@@ -248,17 +254,16 @@ void GameLogic::bossTurn() {
 
     // После начала зарядки босс пропускает два полных спина.
     // На следующем спине он выпускает ультимативную атаку.
-    if (currentBoss.chargeTimer > 0) {
+    if (currentBoss.chargeTimer == 2 || currentBoss.chargeTimer == 1) {
         --currentBoss.chargeTimer;
-        lastMessage += " Босс заряжает ульту... Он пропускает атаку.";
-        if (currentBoss.chargeTimer == 0) {
-            currentBoss.chargeTimer = -1; // Зарядка завершена, ульта готова к следующему спину.
-        }
+        lastMessage += " Босс заряжает ульту... Ход пропущен.";
+        if (currentBoss.chargeTimer == 0) currentBoss.chargeTimer = -1;
         return;
     }
     if (currentBoss.chargeTimer == -1) {
+        // Состояние готовности сбрасывается ДО атаки, чтобы ульта не могла повториться.
         currentBoss.chargeTimer = 0;
-        lastMessage += " Босс завершил зарядку!";
+        lastMessage += " Босс выпускает ульту!";
         takeBossAttack(currentBoss.specAtk, true);
         return;
     }
@@ -287,6 +292,11 @@ void GameLogic::doBloodSpin() {
     if (currentState != GameState::BLOOD_SPIN) return;
 
     int hpCost = static_cast<int>(player.maxHp * 0.05f);
+    if (player.hp <= hpCost) {
+        currentState = GameState::ROBBERY;
+        lastMessage = "Недостаточно HP для кровавого спина! Попробуйте ограбить казино.";
+        return;
+    }
     combatEvents.clear();
     player.hp -= hpCost;
     player.isHpRed = true; // Шкала становится красной
