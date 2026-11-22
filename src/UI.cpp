@@ -87,6 +87,19 @@ UI::UI() {
     newGameButton.setFillColor(sf::Color(35, 25, 45));
     newGameButton.setOutlineColor(sf::Color(255, 170, 60));
     newGameButton.setOutlineThickness(2.f);
+
+    // Временные кнопки разработчика для быстрого переключения боссов.
+    devPrevButton.setSize(sf::Vector2f(95.f, 30.f));
+    devPrevButton.setPosition(430.f, 10.f);
+    devPrevButton.setFillColor(sf::Color(30, 20, 45));
+    devPrevButton.setOutlineColor(sf::Color(170, 70, 255));
+    devPrevButton.setOutlineThickness(2.f);
+
+    devNextButton.setSize(sf::Vector2f(95.f, 30.f));
+    devNextButton.setPosition(535.f, 10.f);
+    devNextButton.setFillColor(sf::Color(30, 20, 45));
+    devNextButton.setOutlineColor(sf::Color(170, 70, 255));
+    devNextButton.setOutlineThickness(2.f);
 }
 
 void UI::armHoldSelection() { holdSelectionMode = true; }
@@ -519,6 +532,12 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     window.draw(saveInner);
     drawCenteredButtonText("SAVE", saveButton, 14, sf::Color(100, 255, 140));
 
+    // Временная панель разработчика.
+    window.draw(devPrevButton);
+    drawCenteredButtonText("< PREV", devPrevButton, 12, sf::Color(210, 150, 255));
+    window.draw(devNextButton);
+    drawCenteredButtonText("NEXT >", devNextButton, 12, sf::Color(210, 150, 255));
+
     // --- 6. АНИМАЦИЯ КРОВАВОЙ ВСПЫШКИ И ВЫЛЕТАЮЩИЙ ТЕКСТ ---
     if (isBloodFlashing) {
         float flashElapsed = bloodFlashTimer.getElapsedTime().asSeconds();
@@ -554,6 +573,8 @@ UIButton UI::getClickedButton(int mouseX, int mouseY, GameState currentState) {
     if (newGameButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::NEW_GAME;
     if (saveButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::SAVE_EXIT;
     if (isSpinning || bloodSpinDelay) return UIButton::NONE;
+    if (devPrevButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::DEV_PREV;
+    if (devNextButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::DEV_NEXT;
     if (currentState == GameState::PLAYING) {
         if (spinButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::SPIN;
         if (holdButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::HOLD;
