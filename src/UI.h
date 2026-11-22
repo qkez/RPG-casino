@@ -10,6 +10,9 @@ class UI {
 public:
     UI();
     void draw(sf::RenderWindow& window, const GameLogic& game);
+    bool introActive() const;
+    void drawIntro(sf::RenderWindow& window);
+    void handleIntroInput();
     UIButton getClickedButton(int mouseX, int mouseY, GameState currentState);
     void startSpinAnimation();
     void startBloodSpinAnimation(int hpCost);
@@ -23,6 +26,11 @@ public:
 private:
     sf::Font fontMain;
     sf::Font fontPixel;
+
+    bool introIsActive = true;
+    sf::Clock introClock;
+    sf::Clock introReelClock;
+    Symbol introReels[3] = { Symbol::COIN, Symbol::JOKER, Symbol::SWORD };
 
     std::map<Symbol, sf::Texture> symbolTextures;
 
