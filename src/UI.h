@@ -12,6 +12,7 @@ public:
     void draw(sf::RenderWindow& window, const GameLogic& game);
     UIButton getClickedButton(int mouseX, int mouseY, GameState currentState);
     void startSpinAnimation();
+    bool takeSpinAnimationFinished();
     void triggerBloodFlash(int hpLost);
 
 private:
@@ -25,6 +26,7 @@ private:
     std::map<BossType, sf::Texture> bossTextures;
 
     bool isSpinning = false;
+    bool spinAnimationFinished = false;
     sf::Clock spinTimer;
     sf::Clock frameTimer;
     Symbol fakeReels[3] = {Symbol::SWORD, Symbol::COIN, Symbol::SKULL};
@@ -41,6 +43,7 @@ private:
     sf::RectangleShape saveButton;
 
     void drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf::Color color);
+    void drawWrappedText(sf::RenderWindow& window, const std::string& text, float x, float y, float maxWidth, unsigned int size, sf::Color color);
     void drawText(sf::RenderWindow& window, const std::string& text, int x, int y, int size, sf::Color color, bool isGlitch = false, bool useMainFont = true);
     std::string getSymbolString(Symbol sym);
 };
