@@ -432,6 +432,9 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     if (game.currentBoss.chargeTimer != 0) {
         drawText(window, game.currentBoss.chargeTimer == -1 ? "УЛЬТА ГОТОВА!" : "БОСС ЗАРЯЖАЕТ УЛЬТУ", 650, 140, 17, sf::Color::Red, true, true);
     }
+    else if (game.currentBoss.type == BossType::DRAGON && game.currentBoss.isBlocking) {
+        drawText(window, "БЛОК КРЫЛЬЯМИ АКТИВЕН!", 650, 140, 15, sf::Color::Cyan, true, true);
+    }
 
     // Картинка текущего босса под его характеристиками
     if (bossTextures.find(game.currentBoss.type) != bossTextures.end() && bossTextures[game.currentBoss.type].getSize().x > 0) {
@@ -561,6 +564,9 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         drawText(window, holdSelectionMode ? "ВЫБОР" : "HOLD", 165, 657, 20,
                  holdSelectionMode ? sf::Color(255, 220, 70) : sf::Color(0, 220, 255), false, true);
         if (holdSelectionMode) drawText(window, "КЛИКНИ БАРАБАН", 140, 625, 12, sf::Color(255, 220, 70), false, true);
+        else drawText(window, game.player.spinsSinceHold >= 3 ? "READY" :
+                      "RECHARGE: " + std::to_string(game.player.spinsSinceHold) + "/3",
+                      155, 695, 10, game.player.spinsSinceHold >= 3 ? sf::Color(0, 220, 255) : sf::Color(160, 160, 180), false, true);
 
         window.draw(hackButton);
         sf::RectangleShape hackInner(sf::Vector2f(112.f, 40.f));
