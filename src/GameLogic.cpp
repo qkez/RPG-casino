@@ -191,7 +191,7 @@ void GameLogic::bossTurn() {
         lastMessage += " ВНИМАНИЕ! Босс готовит СУПЕР-УДАР!";
     }
     else if (currentBoss.chargeTimer == 2) {
-        // Босс наносит спец-удар вместо обычного (или в дополнение, тут решай сама. 
+        // Босс наносит спец-удар вместо обычного (или в дополнение, тут решай сама.
         // В коде ниже он наносит спец-удар, а обычный урон уже прошел в начале функции)
         player.hp -= currentBoss.specAtk;
         lastMessage += " Босс нанес СУПЕР-УДАР на " + std::to_string(currentBoss.specAtk) + " урона!";
@@ -203,14 +203,32 @@ void GameLogic::bossTurn() {
 // КРОВАВЫЙ СПИН
 // ==========================================
 void GameLogic::doBloodSpin() {
+    // Кровавый спин доступен только в специальном состоянии,
+    // когда обычный спин уже нельзя оплатить.
+    if (currentState != GameState::BLOOD_SPIN) return;
+
     int hpCost = static_cast<int>(player.maxHp * 0.05f);
     player.hp -= hpCost;
     player.isHpRed = true; // Шкала становится красной
-    player.balance += 500; // Даем денег, чтобы игрок мог играть
+
+    // Если цена кровавого спина убила игрока, обычный спин не запускаем.
+    if (player.hp <= 0) {
+        player.hp = 0;
+        checkWinOrLose();
+        return;
+    }
+
+    // Кровавый спин дает 500 кредитов, после чего выполняется
+    // обычный спин с обычной стоимостью в 250 кредитов.
+    player.balance += 500;
     currentState = GameState::PLAYING;
 
-    lastMessage = "Кровавый спин! -" + std::to_string(hpCost) + " HP. Выжившие получают 500 кредитов.";
-    checkWinOrLose();
+    spin();
+
+    // Сохраняем в сообщении информацию о цене кровавого спина
+    // и добавляем результат обычного спина.
+    lastMessage = "Кровавый спин: -" + std::to_string(hpCost)
+        + " HP, +500 кредитов. " + lastMessage;
 }
 
 // ==========================================
