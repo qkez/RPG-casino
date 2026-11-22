@@ -19,10 +19,10 @@ add_executable(game
 
 target_link_libraries(game PRIVATE sfml-graphics sfml-window sfml-system)
 
-# Visual Studio / CMake: run from the executable directory, where assets are copied.
-set_property(TARGET game PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:game>")
+# Run the game from the repository root in Visual Studio, so assets/... paths work.
+set_property(TARGET game PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
-# Copy the complete assets folder beside the executable after each build.
+# Also copy assets beside the executable for launching outside the VS debugger.
 add_custom_command(TARGET game POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_SOURCE_DIR}/assets"
