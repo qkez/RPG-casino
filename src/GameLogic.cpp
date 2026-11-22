@@ -62,7 +62,7 @@ void GameLogic::spin() {
         const hackedReel = rand() % 3;
         reels[hackedReel] = hackTarget;
         hackPending = false;
-        combatEvents.push_back({"HACK: один барабан подменён на МЕЧ", true});
+        combatEvents.push_back({"HACK: один барабан подменён на ДЖОКЕРА", true});
     }
 
     // --- МАГИЯ ПОДСЧЕТА СИМВОЛОВ ---
@@ -400,7 +400,7 @@ void GameLogic::useHack(Symbol targetSymbol) {
     player.energy -= hackCost;
     hackTarget = targetSymbol;
     hackPending = true;
-    lastMessage = "HACK активирован! Следующий спин гарантированно даст 1 меч. -40 энергии.";
+    lastMessage = "HACK активирован! Следующий спин гарантированно даст 1 Джокера. -40 энергии.";
 }
 void GameLogic::doRobbery() {}
 void GameLogic::saveGame() {}
