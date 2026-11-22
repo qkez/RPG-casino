@@ -228,6 +228,7 @@ void GameLogic::bossTurn() {
             return;
         }
         if (!isSpecial && locksActive) {
+            combatEvents.push_back({"ОБЫЧНАЯ АТАКА ЗАБЛОКИРОВАНА ЗАМКОМ", true});
             lastMessage += " Замок полностью остановил обычную атаку босса!";
             return;
         }
@@ -286,14 +287,14 @@ void GameLogic::doBloodSpin() {
     if (currentState != GameState::BLOOD_SPIN) return;
 
     int hpCost = static_cast<int>(player.maxHp * 0.05f);
-    player.hp -= hpCost;
     combatEvents.clear();
-    combatEvents.push_back({"-" + std::to_string(hpCost) + " HP (кровавый спин)", false});
+    player.hp -= hpCost;
     player.isHpRed = true; // Шкала становится красной
 
     // Если цена кровавого спина убила игрока, обычный спин не запускаем.
     if (player.hp <= 0) {
         player.hp = 0;
+        combatEvents.push_back({"-" + std::to_string(hpCost) + " HP (кровавый спин)", false});
         checkWinOrLose();
         return;
     }
@@ -304,6 +305,7 @@ void GameLogic::doBloodSpin() {
     currentState = GameState::PLAYING;
 
     spin();
+    combatEvents.insert(combatEvents.begin(), {"-" + std::to_string(hpCost) + " HP (кровавый спин)", false});
 
     // Сохраняем в сообщении информацию о цене кровавого спина
     // и добавляем результат обычного спина.
