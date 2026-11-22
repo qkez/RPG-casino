@@ -65,6 +65,7 @@ public:
     void saveGame();
     void loadGame();
     void restartGame();
+    void setBossForTesting(int index);
 
 private:
     int shieldBlocksRemaining = 0;
