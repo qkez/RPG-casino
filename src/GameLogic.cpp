@@ -16,7 +16,7 @@ GameLogic::GameLogic() {
 
     // Если сохранения нет и босс не создан, начинаем сначала
     if (bossIndex == 0 && currentBoss.name.empty()) {
-        player = { 6666, 6666, 3427, 0, 100, false, 0 }; // Начальные статы игрока
+        player = { 6666, 6666, 3427, 0, 100, false, 3 }; // Первый HOLD доступен сразу
         currentBoss = { "Дикий Волк", BossType::WOLF, 6000, 6000, 200, 800, 0, false };
         currentState = GameState::PLAYING;
         lastMessage = "Добро пожаловать! Сделайте спин.";
@@ -311,7 +311,7 @@ void GameLogic::bossTurn() {
         std::uniform_int_distribution<> specialChance(1, 100);
         const int specialRoll = specialChance(gen);
 
-        if (currentBoss.type == BossType::DRAGON && specialRoll <= 20) {
+        if (currentBoss.type == BossType::DRAGON && specialRoll <= 45) {
             currentBoss.isBlocking = true;
             combatEvents.push_back({"ДРАКОНЧИК ЗАКРЫЛСЯ КРЫЛЬЯМИ: двойные мечи наносят половину урона, тройные пробивают блок", true});
             lastMessage += " | Дракончик расправил крылья и готовится блокировать следующий удар!";
@@ -410,7 +410,7 @@ void GameLogic::nextBoss() {
     hackPending = false;
     hackTarget = Symbol::SWORD;
     heldReelIndex = -1;
-    player.spinsSinceHold = 0;
+    player.spinsSinceHold = 3; // Новый уровень начинается с доступного HOLD
     player.maxHp = static_cast<int>(player.maxHp * 1.1f); // +10% к макс HP
     player.hp = static_cast<int>(player.maxHp * 0.5f);   // Восстановление 50% HP
     player.isHpRed = false;
@@ -460,7 +460,7 @@ void GameLogic::setBossForTesting(int index) {
     armorActive = false;
     hackPending = false;
     hackTarget = Symbol::JOKER;
-    player.spinsSinceHold = 0;
+    player.spinsSinceHold = 3;
     combatEvents.clear();
     lastMessage = "DEV: выбран босс " + std::to_string(bossIndex + 1) + " из 3.";
 }
@@ -623,7 +623,7 @@ void GameLogic::loadGame() {
 
 // Сброс прогресса и создание новой игры
 void GameLogic::restartGame() {
-    player = { 6666, 6666, 3427, 0, 100, false, 0 };
+    player = { 6666, 6666, 3427, 0, 100, false, 3 };
     currentBoss = { "Дикий Волк", BossType::WOLF, 6000, 6000, 200, 800, 0, false };
     bossIndex = 0;
     reels[0] = Symbol::SWORD;
