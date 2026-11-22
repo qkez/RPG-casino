@@ -4,7 +4,7 @@
 
 int main() {
     bool bloodSpinPending = false;
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Cyberpunk RPG Casino");
+    sf::RenderWindow window(sf::VideoMode(1000, 750), "Cyberpunk RPG Casino");
 
     GameLogic game;
     UI ui;
