@@ -56,9 +56,11 @@ UI::UI() {
     spinButton.setPosition(425, 650);
     spinButton.setFillColor(sf::Color(0, 255, 100));
 
-    holdButton.setSize(sf::Vector2f(100, 40));
-    holdButton.setPosition(150, 650);
-    holdButton.setFillColor(sf::Color(255, 215, 0));
+    holdButton.setSize(sf::Vector2f(120, 48));
+    holdButton.setPosition(140, 645);
+    holdButton.setFillColor(sf::Color(20, 35, 50));
+    holdButton.setOutlineColor(sf::Color(0, 220, 255));
+    holdButton.setOutlineThickness(2.f);
 
     hackButton.setSize(sf::Vector2f(100, 40));
     hackButton.setPosition(750, 650);
@@ -244,7 +246,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
 
     // --- 3. ЛОГ СООБЩЕНИЙ (сдвинут вниз под портреты) ---
     if (isSpinning) {
-        drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 350, 305, 16, sf::Color::Cyan, false, false);
+        drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 332, 430, 16, sf::Color::Cyan, false, false);
     }
     else {
         sf::RectangleShape logPanel(sf::Vector2f(940.f, 125.f));
@@ -334,9 +336,18 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         window.draw(spinButton);
         drawText(window, "SPIN", 465, 665, 24, sf::Color::Black, false, true);
 
+        holdButton.setFillColor(holdSelectionMode ? sf::Color(15, 65, 80) : sf::Color(20, 35, 50));
+        holdButton.setOutlineColor(holdSelectionMode ? sf::Color(255, 220, 70) : sf::Color(0, 220, 255));
         window.draw(holdButton);
-        drawText(window, holdSelectionMode ? "ВЫБЕРИ" : "HOLD", 155, 660, 18, sf::Color::Black, false, true);
-        if (holdSelectionMode) drawText(window, "КЛИКНИ БАРАБАН", 140, 625, 12, sf::Color::Cyan, false, true);
+        sf::RectangleShape holdInner(sf::Vector2f(112.f, 40.f));
+        holdInner.setPosition(144.f, 649.f);
+        holdInner.setFillColor(sf::Color::Transparent);
+        holdInner.setOutlineColor(holdSelectionMode ? sf::Color(255, 220, 70, 180) : sf::Color(0, 150, 190, 180));
+        holdInner.setOutlineThickness(1.f);
+        window.draw(holdInner);
+        drawText(window, holdSelectionMode ? "ВЫБОР" : "HOLD", 165, 657, 20,
+                 holdSelectionMode ? sf::Color(255, 220, 70) : sf::Color(0, 220, 255), false, true);
+        if (holdSelectionMode) drawText(window, "КЛИКНИ БАРАБАН", 140, 625, 12, sf::Color(255, 220, 70), false, true);
 
         window.draw(hackButton);
         drawText(window, "HACK", 765, 660, 18, sf::Color::Black, false, true);
