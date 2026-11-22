@@ -153,7 +153,7 @@ void UI::drawWrappedText(sf::RenderWindow& window, const std::string& text, floa
         std::string candidate = currentLine.empty() ? word : currentLine + " " + word;
         line.setString(sf::String::fromUtf8(candidate.begin(), candidate.end()));
         if (!currentLine.empty() && line.getLocalBounds().width > maxWidth) {
-            wrapped += currentLine + "\n\n";
+            wrapped += currentLine + "\n";
             currentLine = word;
         } else {
             currentLine = candidate;
@@ -233,7 +233,14 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 50, 305, 16, sf::Color::Cyan, false, false);
     }
     else {
-        drawWrappedText(window, game.lastMessage, 50.f, 298.f, 700.f, 14, sf::Color::White);
+        sf::RectangleShape logPanel(sf::Vector2f(740.f, 72.f));
+        logPanel.setPosition(30.f, 280.f);
+        logPanel.setFillColor(sf::Color(25, 25, 40));
+        logPanel.setOutlineColor(sf::Color(90, 90, 120));
+        logPanel.setOutlineThickness(1.f);
+        window.draw(logPanel);
+        drawText(window, "РЕЗУЛЬТАТ СПИНА", 45, 285, 12, sf::Color(80, 255, 120), false, true);
+        drawWrappedText(window, game.lastMessage, 45.f, 300.f, 710.f, 14, sf::Color(220, 240, 220));
     }
 
     // Короткие боевые уведомления рядом с героем.
@@ -264,7 +271,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
 
     for (int i = 0; i < 3; i++) {
         float boxX = 150.f + i * 160.f;
-        float boxY = 360.f;
+        float boxY = 370.f;
         float boxSize = 110.f;
 
         sf::RectangleShape reelBox(sf::Vector2f(boxSize, boxSize));
