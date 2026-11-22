@@ -20,6 +20,12 @@ int main() {
                 continue;
             }
 
+            if (ui.levelTransitionActive()) {
+                if (event.type == sf::Event::KeyPressed || event.type == sf::Event::MouseButtonPressed)
+                    ui.finishLevelTransition();
+                continue;
+            }
+
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 if (ui.isSelectingHold()) {
                     int selectedReel = ui.getReelIndexAt(event.mouseButton.x, event.mouseButton.y);
@@ -73,12 +79,17 @@ int main() {
 
         // Сначала завершается анимация, затем применяются результаты спина.
         if (ui.takeSpinAnimationFinished()) {
+            const int previousBossIndex = game.bossIndex;
             if (bloodSpinPending) {
                 game.doBloodSpin();
                 bloodSpinPending = false;
             } else {
                 game.spin();
             }
+
+            // Если победа открыла следующего босса, запускаем отдельную заставку.
+            if (game.bossIndex != previousBossIndex && game.currentState == GameState::PLAYING)
+                ui.startLevelTransition();
         }
     }
     return 0;
