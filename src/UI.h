@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-enum class UIButton { NONE, SPIN, HOLD, HACK, BLOOD_SPIN, ROBBERY, SAVE_EXIT };
+enum class UIButton { NONE, SPIN, HOLD, HACK, BLOOD_SPIN, ROBBERY, SAVE_EXIT, NEW_GAME };
 
 class UI {
 public:
@@ -49,6 +49,7 @@ private:
     sf::RectangleShape bloodSpinButton;
     sf::RectangleShape robberyButton;
     sf::RectangleShape saveButton;
+    sf::RectangleShape newGameButton;
 
     void drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf::Color color);
     void drawWrappedText(sf::RenderWindow& window, const std::string& text, float x, float y, float maxWidth, unsigned int size, sf::Color color);
