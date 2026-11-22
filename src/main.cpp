@@ -45,7 +45,7 @@ int main() {
         if (ui.takeSpinAnimationFinished()) {
             if (bloodSpinPending) {
                 game.doBloodSpin();
-                ui.triggerBloodFlash(bloodSpinHpBefore - game.player.hp);
+                ui.triggerBloodFlash(static_cast<int>(game.player.maxHp * 0.05f));
                 bloodSpinPending = false;
             } else {
                 game.spin();
