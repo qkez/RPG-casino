@@ -197,17 +197,17 @@ void UI::drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf:
 void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     // --- 1. ИНФОРМАЦИЯ ОБ ИГРОКЕ ---
     sf::Color hpColor = game.player.isHpRed ? sf::Color::Red : sf::Color::Green;
-    drawBar(window, 50, 50, game.player.hp, game.player.maxHp, hpColor);
+    drawBar(window, 50, 65, game.player.hp, game.player.maxHp, hpColor);
 
-    drawText(window, "HP: " + std::to_string(game.player.hp) + "/" + std::to_string(game.player.maxHp), 50, 80, 18, sf::Color::White, false, false);
-    drawText(window, "КРЕДИТЫ: " + std::to_string(game.player.balance), 50, 110, 18, sf::Color::Yellow, false, false);
-    drawText(window, "ЭНЕРГИЯ: " + std::to_string(game.player.energy) + "/100", 50, 140, 18, sf::Color::Cyan, false, false);
+    drawText(window, "HP: " + std::to_string(game.player.hp) + "/" + std::to_string(game.player.maxHp), 50, 95, 18, sf::Color::White, false, false);
+    drawText(window, "КРЕДИТЫ: " + std::to_string(game.player.balance), 50, 125, 18, sf::Color::Yellow, false, false);
+    drawText(window, "ЭНЕРГИЯ: " + std::to_string(game.player.energy) + "/100", 50, 155, 18, sf::Color::Cyan, false, false);
 
     // Картинка рыцаря под характеристиками игрока
     if (playerTexture.getSize().x > 0) {
         sf::Sprite playerSprite(playerTexture);
         playerSprite.setScale(125.f / playerTexture.getSize().x, 125.f / playerTexture.getSize().y);
-        playerSprite.setPosition(50.f, 165.f);
+        playerSprite.setPosition(50.f, 180.f);
         window.draw(playerSprite);
     }
 
@@ -248,7 +248,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     for (std::size_t i = 0; i < game.combatEvents.size() && i < 3; ++i) {
         sf::Color eventColor = game.combatEvents[i].positive
             ? sf::Color(80, 255, 120) : sf::Color(255, 90, 90);
-        drawWrappedText(window, game.combatEvents[i].text, 220.f, 190.f + static_cast<float>(i) * 30.f, 260.f, 16, eventColor);
+        drawWrappedText(window, game.combatEvents[i].text, 220.f, 205.f + static_cast<float>(i) * 30.f, 260.f, 16, eventColor);
     }
 
     // --- 4. БАРАБАНЫ С КАРТИНКАМИ И АНИМАЦИЕЙ (сдвинуты вниз) ---
