@@ -30,6 +30,9 @@ public:
     bool isSelectingHold() const;
     int getReelIndexAt(int mouseX, int mouseY) const;
     void cancelHoldSelection();
+    void startVictoryAnimation();
+    bool victoryAnimationActive() const;
+    void finishVictoryAnimation();
 
 private:
     sf::Font fontMain;
@@ -37,6 +40,9 @@ private:
 
     bool introIsActive = true;
     sf::Clock introClock;
+
+    bool victoryIsActive = false;
+    sf::Clock victoryClock;
 
     bool levelTransitionIsActive = false;
     sf::Clock levelTransitionClock;
@@ -83,6 +89,7 @@ private:
     sf::RectangleShape devRobberyButton;
 
     void drawLevelTransition(sf::RenderWindow& window, const GameLogic& game);
+    void drawVictoryAnimation(sf::RenderWindow& window);
     void drawRobberyAnimation(sf::RenderWindow& window);
     void drawRobberyResult(sf::RenderWindow& window);
     void drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf::Color color);

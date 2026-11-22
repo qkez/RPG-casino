@@ -25,6 +25,13 @@ int main() {
                     ui.finishLevelTransition();
                 continue;
             }
+            if (ui.victoryAnimationActive()) {
+                if (event.type == sf::Event::KeyPressed ||
+                    event.type == sf::Event::MouseButtonPressed) {
+                    ui.finishVictoryAnimation();
+                }
+                continue;
+            }
 
             if (ui.robberyAnimationActive() || ui.robberyResultActive())
                 continue;
@@ -107,6 +114,8 @@ int main() {
             // Если победа открыла следующего босса, запускаем отдельную заставку.
             if (game.bossIndex != previousBossIndex && game.currentState == GameState::PLAYING)
                 ui.startLevelTransition();
+            if (game.currentState == GameState::WIN)
+                ui.startVictoryAnimation();
         }
     }
     return 0;

@@ -509,7 +509,7 @@ void GameLogic::prepareRobberyForTesting() {
 }
 
 void GameLogic::doRobbery() {
-    if (currentState != GameState::ROBBERY || player.balance > 0) {
+    if (currentState != GameState::ROBBERY) {
         lastMessage = "Ограбление сейчас недоступно.";
         return;
     }
@@ -521,8 +521,14 @@ void GameLogic::doRobbery() {
     if (outcome(gen) <= 50) {
         player.balance = std::max(1, robberyReward);
         currentState = GameState::PLAYING;
-        combatEvents.push_back({"+" + std::to_string(player.balance) + " КРЕДИТОВ: ограбление удалось", true});
-        lastMessage = "ОГРАБЛЕНИЕ УДАЛОСЬ! Вы унесли " + std::to_string(player.balance) + " кредитов.";
+
+        combatEvents.push_back({
+            "+" + std::to_string(player.balance) +
+            " КРЕДИТОВ: ограбление удалось", true
+            });
+
+        lastMessage = "ОГРАБЛЕНИЕ УДАЛОСЬ! Вы унесли " +
+            std::to_string(player.balance) + " кредитов.";
     }
     else {
         currentState = GameState::GAME_OVER;

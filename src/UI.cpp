@@ -153,6 +153,26 @@ bool UI::takeSpinAnimationFinished() {
     return true;
 }
 
+void UI::startVictoryAnimation() {
+    victoryIsActive = true;
+    victoryClock.restart();
+
+    levelTransitionIsActive = false;
+    robberyAnimationIsActive = false;
+    robberyResultIsActive = false;
+    isSpinning = false;
+    bloodSpinDelay = false;
+    holdSelectionMode = false;
+}
+
+bool UI::victoryAnimationActive() const {
+    return victoryIsActive;
+}
+
+void UI::finishVictoryAnimation() {
+    victoryIsActive = false;
+}
+
 void UI::startLevelTransition() {
     levelTransitionIsActive = true;
     levelTransitionClock.restart();
@@ -460,22 +480,45 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         drawWrappedText(window, game.lastMessage, 45.f, 342.f, 910.f, 18, sf::Color(220, 240, 220));
     }
 
-    // История боя: панель с цветным выводом полезных эффектов и атак.
+    // Компактная история боя: не перекрывает основной результат спина.
     if (!game.combatEvents.empty()) {
-        sf::RectangleShape eventPanel(sf::Vector2f(300.f, 130.f));
-        eventPanel.setPosition(320.f, 175.f);
+        sf::RectangleShape eventPanel(sf::Vector2f(290.f, 125.f));
+        eventPanel.setPosition(330.f, 175.f);
         eventPanel.setFillColor(sf::Color(20, 20, 35, 230));
         eventPanel.setOutlineColor(sf::Color(70, 70, 100));
         eventPanel.setOutlineThickness(1.f);
         window.draw(eventPanel);
-        drawText(window, "ИСТОРИЯ БОЯ", 332, 178, 12, sf::Color(180, 180, 210), false, true);
+
+        drawText(window, "ИСТОРИЯ БОЯ", 342, 178, 12,
+            sf::Color(180, 180, 210), false, true);
+
+        const int maxEvents = 3;
+        int startIndex = static_cast<int>(game.combatEvents.size()) - maxEvents;
+        if (startIndex < 0)
+            startIndex = 0;
 
         float eventY = 198.f;
-        for (const auto& event : game.combatEvents) {
+
+        for (int i = startIndex;
+            i < static_cast<int>(game.combatEvents.size()); ++i) {
+
+            const auto& event = game.combatEvents[i];
+
             sf::Color eventColor = event.positive
-                ? sf::Color(80, 255, 120) : sf::Color(255, 90, 90);
-            drawWrappedText(window, event.text, 332.f, eventY, 275.f, 11, eventColor);
-            eventY += 18.f;
+                ? sf::Color(80, 255, 120)
+                : sf::Color(255, 90, 90);
+
+            drawWrappedText(
+                window,
+                event.text,
+                342.f,
+                eventY,
+                265.f,
+                11,
+                eventColor
+            );
+
+            eventY += 34.f;
         }
     }
 
@@ -650,6 +693,8 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         drawRobberyAnimation(window);
     if (robberyResultActive())
         drawRobberyResult(window);
+    if (victoryIsActive)
+        drawVictoryAnimation(window);
 }
 
 void UI::drawRobberyAnimation(sf::RenderWindow& window) {
@@ -908,4 +953,122 @@ UIButton UI::getClickedButton(int mouseX, int mouseY, GameState currentState) {
         if (robberyButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::ROBBERY;
     }
     return UIButton::NONE;
+}
+
+void UI::drawVictoryAnimation(sf::RenderWindow& window) {
+    const float elapsed = victoryClock.getElapsedTime().asSeconds();
+
+    window.clear(sf::Color(2, 1, 8));
+
+    auto centered = [&](const std::string& value, float y,
+        unsigned int size, sf::Color color,
+        bool pixelFont = false) {
+            sf::Text text;
+            text.setFont(pixelFont ? fontPixel : fontMain);
+            text.setString(sf::String::fromUtf8(value.begin(), value.end()));
+            text.setCharacterSize(size);
+            text.setFillColor(color);
+
+            sf::FloatRect bounds = text.getLocalBounds();
+            text.setOrigin(bounds.left + bounds.width / 2.f,
+                bounds.top + bounds.height / 2.f);
+            text.setPosition(500.f, y);
+            window.draw(text);
+        };
+
+    // CRT-помехи
+    for (int y = 0; y < 750; y += 5) {
+        sf::RectangleShape line(sf::Vector2f(1000.f, 1.f));
+        line.setPosition(0.f, static_cast<float>(y));
+        line.setFillColor(sf::Color(0, 0, 0, 90));
+        window.draw(line);
+    }
+
+    // Случайные глитчи
+    for (int i = 0; i < 16; ++i) {
+        if (rand() % 100 < 65) {
+            sf::RectangleShape glitch(
+                sf::Vector2f(100.f + rand() % 800, 2.f + rand() % 8)
+            );
+
+            glitch.setPosition(
+                static_cast<float>(rand() % 1000),
+                static_cast<float>(rand() % 750)
+            );
+
+            glitch.setFillColor(sf::Color(
+                255, 20, 50, static_cast<sf::Uint8>(80 + rand() % 160)
+            ));
+
+            window.draw(glitch);
+        }
+    }
+
+    // Фаза 1 — уничтожение финальной цели
+    if (elapsed < 1.5f) {
+        sf::RectangleShape flash(sf::Vector2f(1000.f, 750.f));
+
+        if (elapsed < 0.15f)
+            flash.setFillColor(sf::Color(255, 0, 30, 80));
+        else
+            flash.setFillColor(sf::Color(0, 0, 0, 0));
+
+        window.draw(flash);
+
+        centered("FINAL TARGET ELIMINATED", 300.f, 32,
+            sf::Color(255, 35, 65));
+
+        centered("// NYASHKA TERMINATED //", 370.f, 18,
+            sf::Color(200, 60, 80), true);
+    }
+
+    // Фаза 2 — система казино рушится
+    else if (elapsed < 3.5f) {
+        centered("SYSTEM FAILURE", 300.f, 58,
+            sf::Color(255, 20, 50));
+
+        centered("CASINO CORE DESTROYED", 380.f, 22,
+            sf::Color(220, 70, 90), true);
+
+        centered("ERROR 0x0000_FINAL", 440.f, 17,
+            sf::Color(180, 40, 65), true);
+    }
+
+    // Фаза 3 — отключение системы
+    else if (elapsed < 5.5f) {
+        centered("SHUTTING DOWN...", 340.f, 35,
+            sf::Color(255, 45, 65));
+
+        centered("ALL SYSTEMS OFFLINE", 410.f, 20,
+            sf::Color(180, 60, 80), true);
+
+        for (int i = 0; i < 10; ++i) {
+            sf::RectangleShape block(sf::Vector2f(
+                80.f + rand() % 400, 5.f + rand() % 25
+            ));
+
+            block.setPosition(
+                static_cast<float>(rand() % 900),
+                static_cast<float>(rand() % 750)
+            );
+
+            block.setFillColor(sf::Color(180, 0, 40, 130));
+            window.draw(block);
+        }
+    }
+
+    // Фаза 4 — победа игрока
+    else {
+        centered("YOU BEAT THE HOUSE", 285.f, 54,
+            sf::Color(255, 40, 75));
+
+        centered("GAME COMPLETED", 370.f, 28,
+            sf::Color(255, 255, 255));
+
+        centered("ALL BOSSES ELIMINATED", 440.f, 18,
+            sf::Color(180, 70, 100), true);
+
+        centered("THANK YOU FOR PLAYING", 530.f, 16,
+            sf::Color(120, 255, 180), true);
+    }
 }
