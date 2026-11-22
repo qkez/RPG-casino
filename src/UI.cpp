@@ -749,9 +749,10 @@ void UI::drawLevelTransition(sf::RenderWindow& window, const GameLogic& game) {
     }
 }
 UIButton UI::getClickedButton(int mouseX, int mouseY, GameState currentState) {
+    // Во время анимации спина блокируем все кнопки, включая NEW GAME и SAVE.
+    if (isSpinning || bloodSpinDelay) return UIButton::NONE;
     if (newGameButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::NEW_GAME;
     if (saveButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::SAVE_EXIT;
-    if (isSpinning || bloodSpinDelay) return UIButton::NONE;
     if (devPrevButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::DEV_PREV;
     if (devNextButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::DEV_NEXT;
     if (currentState == GameState::PLAYING) {
