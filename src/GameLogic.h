@@ -2,6 +2,11 @@
 #include <string>
 #include <vector>
 
+struct CombatEvent {
+    std::string text;
+    bool positive = false;
+};
+
 
 // Наши 10 символов
 enum class Symbol { SWORD, BOMB, SHIELD, LOCK, MEDKIT, BATTERY, COIN, DIAMOND, SKULL, JOKER };
@@ -29,7 +34,7 @@ struct Boss {
     int maxHp;
     int atk;
     int specAtk;
-    int chargeTimer = 0; // 0 - не заряжается, 1 - заряжается, 2 - ударит в след. раз
+    int chargeTimer = 0; // 0 - обычный режим, 2/1 - два спина зарядки, -1 - ульта готова
     bool isBlocking = false; // Для дракона
 };
 
@@ -44,7 +49,10 @@ public:
     Symbol reels[3];
     GameState currentState = GameState::PLAYING;
     std::string lastMessage = "Добро пожаловать в Казино!";
+    std::vector<CombatEvent> combatEvents;
     int spinCost = 250;
+    int robberyReward = 2500; // Настраиваемая награда за успешное ограбление
+    int heldReelIndex = -1; // Индекс удержанного барабана (-1 = нет захвата)
 
     // Действия игрока
     void spin();
@@ -52,13 +60,21 @@ public:
     void useHack(Symbol targetSymbol); // Взлом 
     void doBloodSpin();
     void doRobbery();
+    void prepareRobberyForTesting();
     void nextBoss(); // Переход на следующий уровень
 
     // Сохранение
     void saveGame();
     void loadGame();
+    void restartGame();
+    void setBossForTesting(int index);
 
 private:
+    int shieldBlocksRemaining = 0;
+    bool locksActive = false;
+    bool armorActive = false;
+    bool hackPending = false;
+    Symbol hackTarget = Symbol::SWORD;
     void bossTurn();
     void checkWinOrLose();
     Symbol getRandomSymbol();
