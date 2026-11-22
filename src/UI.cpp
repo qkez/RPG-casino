@@ -78,9 +78,18 @@ UI::UI() {
 
 void UI::startSpinAnimation() {
     isSpinning = true;
+    bloodSpinDelay = false;
     spinAnimationFinished = false;
     spinTimer.restart();
     frameTimer.restart();
+}
+
+void UI::startBloodSpinAnimation(int hpCost) {
+    triggerBloodFlash(hpCost);
+    bloodSpinDelay = true;
+    isSpinning = false;
+    spinAnimationFinished = false;
+    bloodSpinDelayTimer.restart();
 }
 
 bool UI::takeSpinAnimationFinished() {
@@ -235,6 +244,10 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     }
 
     // --- 4. БАРАБАНЫ С КАРТИНКАМИ И АНИМАЦИЕЙ (сдвинуты вниз) ---
+    if (bloodSpinDelay && bloodSpinDelayTimer.getElapsedTime().asSeconds() >= 1.2f) {
+        bloodSpinDelay = false;
+        startSpinAnimation();
+    }
     float elapsed = spinTimer.getElapsedTime().asSeconds();
     if (isSpinning) {
         if (frameTimer.getElapsedTime().asSeconds() > 0.06f) {
@@ -339,7 +352,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
 }
 UIButton UI::getClickedButton(int mouseX, int mouseY, GameState currentState) {
     if (saveButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::SAVE_EXIT;
-    if (isSpinning) return UIButton::NONE;
+    if (isSpinning || bloodSpinDelay) return UIButton::NONE;
     if (currentState == GameState::PLAYING) {
         if (spinButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::SPIN;
         if (holdButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::HOLD;
