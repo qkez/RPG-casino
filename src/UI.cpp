@@ -78,7 +78,9 @@ UI::UI() {
 
     saveButton.setSize(sf::Vector2f(100, 30));
     saveButton.setPosition(880, 10);
-    saveButton.setFillColor(sf::Color(100, 100, 100));
+    saveButton.setFillColor(sf::Color(20, 35, 50));
+    saveButton.setOutlineColor(sf::Color(80, 255, 120));
+    saveButton.setOutlineThickness(2.f);
 }
 
 void UI::armHoldSelection() { holdSelectionMode = true; }
@@ -370,7 +372,13 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     }
 
     window.draw(saveButton);
-    drawText(window, "SAVE", 905, 12, 14, sf::Color::White, false, true);
+    sf::RectangleShape saveInner(sf::Vector2f(92.f, 22.f));
+    saveInner.setPosition(884.f, 14.f);
+    saveInner.setFillColor(sf::Color::Transparent);
+    saveInner.setOutlineColor(sf::Color(40, 170, 90, 180));
+    saveInner.setOutlineThickness(1.f);
+    window.draw(saveInner);
+    drawText(window, "SAVE", 905, 12, 14, sf::Color(100, 255, 140), false, true);
 
     // --- 6. АНИМАЦИЯ КРОВАВОЙ ВСПЫШКИ И ВЫЛЕТАЮЩИЙ ТЕКСТ ---
     if (isBloodFlashing) {
