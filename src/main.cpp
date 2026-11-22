@@ -46,6 +46,11 @@ int main() {
                     ui.startBloodSpinAnimation(static_cast<int>(game.player.maxHp * 0.05f));
                 }
                 else if (btn == UIButton::ROBBERY) game.doRobbery();
+                else if (btn == UIButton::DEV_ROBBERY) {
+                    game.prepareRobberyForTesting();
+                    bloodSpinPending = false;
+                    ui.cancelHoldSelection();
+                }
                 else if (btn == UIButton::SAVE_EXIT) {
                     game.saveGame();
                 }
