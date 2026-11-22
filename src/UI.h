@@ -20,6 +20,11 @@ public:
     void startLevelTransition();
     bool levelTransitionActive() const;
     void finishLevelTransition();
+    void startRobberyAnimation();
+    bool robberyAnimationActive() const;
+    bool takeRobberyAnimationFinished();
+    void startRobberyResult(bool success, int reward);
+    bool robberyResultActive() const;
     void triggerBloodFlash(int hpLost);
     void armHoldSelection();
     bool isSelectingHold() const;
@@ -35,6 +40,13 @@ private:
 
     bool levelTransitionIsActive = false;
     sf::Clock levelTransitionClock;
+
+    bool robberyAnimationIsActive = false;
+    sf::Clock robberyAnimationClock;
+    bool robberyResultIsActive = false;
+    bool robberyResultSuccess = false;
+    int robberyResultReward = 0;
+    sf::Clock robberyResultClock;
     sf::Clock transitionReelClock;
     Symbol transitionReels[3] = { Symbol::COIN, Symbol::JOKER, Symbol::SWORD };
     sf::Clock introReelClock;
@@ -71,6 +83,8 @@ private:
     sf::RectangleShape devRobberyButton;
 
     void drawLevelTransition(sf::RenderWindow& window, const GameLogic& game);
+    void drawRobberyAnimation(sf::RenderWindow& window);
+    void drawRobberyResult(sf::RenderWindow& window);
     void drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf::Color color);
     void drawWrappedText(sf::RenderWindow& window, const std::string& text, float x, float y, float maxWidth, unsigned int size, sf::Color color);
     void drawText(sf::RenderWindow& window, const std::string& text, int x, int y, int size, sf::Color color, bool isGlitch = false, bool useMainFont = true);
