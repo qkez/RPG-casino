@@ -70,7 +70,7 @@ void GameLogic::spin() {
     int jokerCount = counts[static_cast<int>(Symbol::JOKER)];
     if (jokerCount == 3) {
         currentBoss.hp = 1;
-        lastMessage = "СУПЕР-ДЖЕКПОТ! 🃏🃏🃏 Боссу остается 1 HP!";
+        lastMessage = "СУПЕР-ДЖЕКПОТ! ТРИ ДЖОКЕРА! Боссу остается 1 HP!";
     }
     else {
         if (jokerCount == 2) {
@@ -117,48 +117,48 @@ void GameLogic::spin() {
             int dmg = static_cast<int>(currentBoss.maxHp * 0.60f);
             currentBoss.hp -= dmg;
             if (currentBoss.hp < 0) currentBoss.hp = 0;
-            lastMessage = "ДЖЕКПОТ! 🗡️🗡️🗡️ Урон боссу: " + std::to_string(dmg);
+            lastMessage = "ДЖЕКПОТ! ТРИ МЕЧА! Урон боссу: " + std::to_string(dmg);
         }
         else if (counts[static_cast<int>(Symbol::BOMB)] == 3) {
             int dmg = static_cast<int>(currentBoss.maxHp * 0.50f);
             currentBoss.hp -= dmg;
             if (currentBoss.hp < 0) currentBoss.hp = 0;
-            lastMessage = "ДЖЕКПОТ! 💣💣💣 Взрыв! Урон: " + std::to_string(dmg);
+            lastMessage = "ДЖЕКПОТ! ТРИ БОМБЫ! Взрыв! Урон: " + std::to_string(dmg);
         }
         else if (counts[static_cast<int>(Symbol::MEDKIT)] == 3) {
             int healed = player.maxHp - player.hp;
             player.hp = player.maxHp;
             player.isHpRed = false;
             if (healed > 0) combatEvents.push_back({"+" + std::to_string(healed) + " HP", true});
-            lastMessage = "ДЖЕКПОТ! 🧪🧪🧪 Полное восстановление HP!";
+            lastMessage = "ДЖЕКПОТ! ТРИ АПТЕЧКИ! Полное восстановление HP!";
         }
         else if (counts[static_cast<int>(Symbol::BATTERY)] == 3) {
             player.energy = player.maxEnergy;
-            lastMessage = "ДЖЕКПОТ! 🔋🔋🔋 Энергия восстановлена полностью!";
+            lastMessage = "ДЖЕКПОТ! ТРИ БАТАРЕЙКИ! Энергия восстановлена полностью!";
         }
         else if (counts[static_cast<int>(Symbol::COIN)] == 3) {
             player.balance *= 2;
             if (player.balance == 0) player.balance = 500;
-            lastMessage = "ДЖЕКПОТ! 🪙🪙🪙 Кредиты удвоены! Теперь у вас: " + std::to_string(player.balance);
+            lastMessage = "ДЖЕКПОТ! ТРИ МОНЕТЫ! Кредиты удвоены! Теперь у вас: " + std::to_string(player.balance);
         }
         else if (counts[static_cast<int>(Symbol::DIAMOND)] == 3) {
             player.balance *= 10;
             if (player.balance == 0) player.balance = 2500;
-            lastMessage = "ДЖЕКПОТ! 💎💎💎 Кредиты умножены на 10! Теперь у вас: " + std::to_string(player.balance);
+            lastMessage = "ДЖЕКПОТ! ТРИ АЛМАЗА! Кредиты умножены на 10! Теперь у вас: " + std::to_string(player.balance);
         }
         else if (counts[static_cast<int>(Symbol::SKULL)] == 3) {
             player.hp = 1;
             player.isHpRed = true;
-            lastMessage = "ДЖЕКПОТ! 💀💀💀 У вас остался 1 HP!";
+            lastMessage = "ДЖЕКПОТ! ТРИ ЧЕРЕПА! У вас остался 1 HP!";
         }
         else if (counts[static_cast<int>(Symbol::SHIELD)] == 3) {
             shieldBlocksRemaining += 3;
-            lastMessage = "ДЖЕКПОТ! 🛡️🛡️🛡️ Следующие 3 атаки босса заблокированы!";
+            lastMessage = "ДЖЕКПОТ! ТРИ ЩИТА! Следующие 3 атаки босса заблокированы!";
         }
         else if (counts[static_cast<int>(Symbol::LOCK)] == 3) {
             locksActive = true;
             armorActive = false;
-            lastMessage = "ДЖЕКПОТ! 🔒🔒🔒 Все обычные атаки босса заблокированы до конца боя!";
+            lastMessage = "ДЖЕКПОТ! ТРИ ЗАМКА! Все обычные атаки босса заблокированы до конца боя!";
         }
 
         // --- ОБЫЧНЫЕ ВЫПАДЕНИЯ (ДВОЙКИ) ---
