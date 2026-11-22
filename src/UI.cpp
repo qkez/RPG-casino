@@ -173,6 +173,35 @@ void UI::finishLevelTransition() {
     levelTransitionIsActive = false;
 }
 
+void UI::startRobberyAnimation() {
+    robberyAnimationIsActive = true;
+    robberyResultIsActive = false;
+    robberyAnimationClock.restart();
+    holdSelectionMode = false;
+}
+
+bool UI::robberyAnimationActive() const {
+    return robberyAnimationIsActive;
+}
+
+bool UI::takeRobberyAnimationFinished() {
+    if (!robberyAnimationIsActive || robberyAnimationClock.getElapsedTime().asSeconds() < 3.4f)
+        return false;
+    robberyAnimationIsActive = false;
+    return true;
+}
+
+void UI::startRobberyResult(bool success, int reward) {
+    robberyResultSuccess = success;
+    robberyResultReward = reward;
+    robberyResultIsActive = true;
+    robberyResultClock.restart();
+}
+
+bool UI::robberyResultActive() const {
+    return robberyResultIsActive && robberyResultClock.getElapsedTime().asSeconds() < 1.9f;
+}
+
 void UI::triggerBloodFlash(int hpLost) {
     isBloodFlashing = true;
     bloodHpLost = hpLost;
@@ -610,6 +639,103 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
 
     if (levelTransitionIsActive)
         drawLevelTransition(window, game);
+
+    if (robberyAnimationIsActive)
+        drawRobberyAnimation(window);
+    if (robberyResultActive())
+        drawRobberyResult(window);
+}
+
+void UI::drawRobberyAnimation(sf::RenderWindow& window) {
+    const float elapsed = robberyAnimationClock.getElapsedTime().asSeconds();
+    const float progress = std::max(0.f, std::min(1.f, elapsed / 3.4f));
+    sf::RectangleShape shade(sf::Vector2f(1000.f, 750.f));
+    shade.setFillColor(sf::Color(2, 1, 5, 238));
+    window.draw(shade);
+    for (int y = 0; y < 750; y += 6) {
+        sf::RectangleShape line(sf::Vector2f(1000.f, 1.f));
+        line.setPosition(0.f, static_cast<float>(y));
+        line.setFillColor(sf::Color(0, 0, 0, 75));
+        window.draw(line);
+    }
+    auto centered = [&](const std::string& value, float y, unsigned int size, sf::Color color, bool mainFont = true) {
+        sf::Text text;
+        text.setFont(mainFont ? fontMain : fontPixel);
+        text.setString(sf::String::fromUtf8(value.begin(), value.end()));
+        text.setCharacterSize(size);
+        text.setFillColor(color);
+        const sf::FloatRect bounds = text.getLocalBounds();
+        text.setOrigin(bounds.left + bounds.width / 2.f, bounds.top + bounds.height / 2.f);
+        text.setPosition(500.f, y);
+        window.draw(text);
+    };
+    const bool alarm = (static_cast<int>(elapsed * 7.f) % 2) == 0;
+    if (alarm) {
+        sf::RectangleShape flash(sf::Vector2f(1000.f, 750.f));
+        flash.setFillColor(sf::Color(120, 0, 18, 24));
+        window.draw(flash);
+    }
+    centered("/// SECURITY BREACH ///", 175.f, 18, sf::Color(255, 65, 75), false);
+    centered("ROBBERY IN PROGRESS", 260.f, 46, sf::Color(255, 25, 50));
+    centered(elapsed < 1.15f ? "BYPASSING SECURITY" :
+             (elapsed < 2.45f ? "ACCESSING THE VAULT" : "TRANSFERRING CREDITS..."),
+             330.f, 19, sf::Color(220, 95, 105), false);
+    sf::RectangleShape barBack(sf::Vector2f(520.f, 18.f));
+    barBack.setPosition(240.f, 390.f);
+    barBack.setFillColor(sf::Color(35, 8, 15));
+    barBack.setOutlineColor(sf::Color(180, 25, 45));
+    barBack.setOutlineThickness(2.f);
+    window.draw(barBack);
+    sf::RectangleShape barFill(sf::Vector2f(516.f * progress, 14.f));
+    barFill.setPosition(242.f, 392.f);
+    barFill.setFillColor(sf::Color(255, 25, 55));
+    window.draw(barFill);
+    for (int i = 0; i < 13; ++i) {
+        sf::RectangleShape tick(sf::Vector2f(2.f, 26.f));
+        tick.setPosition(240.f + i * 43.f, 386.f);
+        tick.setFillColor(sf::Color(5, 3, 8, 210));
+        window.draw(tick);
+    }
+    centered("CASINO MAINFRAME // CONNECTION UNSTABLE", 445.f, 13, sf::Color(155, 55, 70), false);
+    centered(elapsed < 2.7f ? "DO NOT INTERRUPT" : "FINALIZING...", 545.f, 17,
+             alarm ? sf::Color(255, 45, 60) : sf::Color(190, 25, 45), false);
+    if (rand() % 100 < 40) {
+        sf::RectangleShape glitch(sf::Vector2f(180.f + static_cast<float>(rand() % 500), 2.f + static_cast<float>(rand() % 4)));
+        glitch.setPosition(static_cast<float>(rand() % 800), static_cast<float>(rand() % 730));
+        glitch.setFillColor(sf::Color(255, 15, 45, 150));
+        window.draw(glitch);
+    }
+}
+
+void UI::drawRobberyResult(sf::RenderWindow& window) {
+    const float elapsed = robberyResultClock.getElapsedTime().asSeconds();
+    const float fade = std::max(0.f, 1.f - elapsed / 1.9f);
+    const sf::Color accent = robberyResultSuccess ? sf::Color(70, 255, 135) : sf::Color(255, 35, 55);
+    sf::RectangleShape shade(sf::Vector2f(1000.f, 750.f));
+    shade.setFillColor(sf::Color(2, 1, 5, static_cast<sf::Uint8>(225.f * fade)));
+    window.draw(shade);
+    auto centered = [&](const std::string& value, float y, unsigned int size, sf::Color color) {
+        sf::Text text;
+        text.setFont(fontMain);
+        text.setString(sf::String::fromUtf8(value.begin(), value.end()));
+        text.setCharacterSize(size);
+        text.setFillColor(color);
+        const sf::FloatRect bounds = text.getLocalBounds();
+        text.setOrigin(bounds.left + bounds.width / 2.f, bounds.top + bounds.height / 2.f);
+        text.setPosition(500.f, y);
+        window.draw(text);
+    };
+    centered(robberyResultSuccess ? "ACCESS GRANTED" : "CAUGHT", 310.f, 58, accent);
+    centered(robberyResultSuccess ? "+" + std::to_string(robberyResultReward) + " CREDITS" : "SECURITY LOCKDOWN // GAME OVER",
+             390.f, 20, sf::Color(235, 190, 195));
+    for (int i = 0; i < 7; ++i) {
+        if (rand() % 100 < 65) {
+            sf::RectangleShape glitch(sf::Vector2f(120.f + static_cast<float>(rand() % 650), 2.f));
+            glitch.setPosition(static_cast<float>(rand() % 850), 270.f + static_cast<float>(rand() % 180));
+            glitch.setFillColor(sf::Color(accent.r, accent.g, accent.b, static_cast<sf::Uint8>(120.f * fade)));
+            window.draw(glitch);
+        }
+    }
 }
 
 void UI::drawLevelTransition(sf::RenderWindow& window, const GameLogic& game) {
@@ -757,8 +883,8 @@ void UI::drawLevelTransition(sf::RenderWindow& window, const GameLogic& game) {
     }
 }
 UIButton UI::getClickedButton(int mouseX, int mouseY, GameState currentState) {
-    // Во время анимации спина блокируем все кнопки, включая NEW GAME и SAVE.
-    if (isSpinning || bloodSpinDelay) return UIButton::NONE;
+    // Блокируем управление во время анимаций спина и ограбления.
+    if (isSpinning || bloodSpinDelay || robberyAnimationActive() || robberyResultActive()) return UIButton::NONE;
     if (newGameButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::NEW_GAME;
     if (saveButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::SAVE_EXIT;
     if (devPrevButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::DEV_PREV;
