@@ -17,6 +17,9 @@ public:
     void startSpinAnimation();
     void startBloodSpinAnimation(int hpCost);
     bool takeSpinAnimationFinished();
+    void startLevelTransition();
+    bool levelTransitionActive() const;
+    void finishLevelTransition();
     void triggerBloodFlash(int hpLost);
     void armHoldSelection();
     bool isSelectingHold() const;
@@ -29,6 +32,11 @@ private:
 
     bool introIsActive = true;
     sf::Clock introClock;
+
+    bool levelTransitionIsActive = false;
+    sf::Clock levelTransitionClock;
+    sf::Clock transitionReelClock;
+    Symbol transitionReels[3] = { Symbol::COIN, Symbol::JOKER, Symbol::SWORD };
     sf::Clock introReelClock;
     Symbol introReels[3] = { Symbol::COIN, Symbol::JOKER, Symbol::SWORD };
 
@@ -61,6 +69,7 @@ private:
     sf::RectangleShape devPrevButton;
     sf::RectangleShape devNextButton;
 
+    void drawLevelTransition(sf::RenderWindow& window, const GameLogic& game);
     void drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf::Color color);
     void drawWrappedText(sf::RenderWindow& window, const std::string& text, float x, float y, float maxWidth, unsigned int size, sf::Color color);
     void drawText(sf::RenderWindow& window, const std::string& text, int x, int y, int size, sf::Color color, bool isGlitch = false, bool useMainFont = true);
