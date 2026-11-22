@@ -31,7 +31,7 @@ int main() {
                     window.close();
                 }
                 else if (btn == UIButton::HOLD) game.holdReel(0);
-                else if (btn == UIButton::HACK) game.useHack(Symbol::SWORD);
+                else if (btn == UIButton::HACK) game.useHack(Symbol::JOKER);
             }
         }
 
