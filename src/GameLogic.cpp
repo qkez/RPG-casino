@@ -4,6 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <string>
+#include <iomanip>
 
 // ==========================================
 // КОНСТРУКТОР
@@ -418,5 +419,72 @@ void GameLogic::useHack(Symbol targetSymbol) {
     lastMessage = "HACK активирован! Следующий спин гарантированно даст 1 Джокера. -40 энергии.";
 }
 void GameLogic::doRobbery() {}
-void GameLogic::saveGame() {}
-void GameLogic::loadGame() {}
+
+void GameLogic::saveGame() {
+    std::ofstream out("savegame.txt");
+    if (!out) {
+        lastMessage = "ОШИБКА: не удалось создать файл сохранения.";
+        return;
+    }
+    out << player.hp << ' ' << player.maxHp << ' ' << player.balance << ' '
+        << player.energy << ' ' << player.maxEnergy << ' ' << player.isHpRed << ' '
+        << player.spinsSinceHold << '\\n';
+    out << bossIndex << ' ' << static_cast<int>(currentBoss.type) << ' '
+        << currentBoss.hp << ' ' << currentBoss.maxHp << ' ' << currentBoss.atk << ' '
+        << currentBoss.specAtk << ' ' << currentBoss.chargeTimer << ' '
+        << currentBoss.isBlocking << '\\n';
+    out << std::quoted(currentBoss.name) << '\\n';
+    out << static_cast<int>(currentState) << ' ' << spinCost << ' ' << heldReelIndex << '\\n';
+    for (int i = 0; i < 3; ++i) out << static_cast<int>(reels[i]) << ' ';
+    out << '\\n' << shieldBlocksRemaining << ' ' << locksActive << ' ' << armorActive
+        << ' ' << hackPending << ' ' << static_cast<int>(hackTarget) << '\\n';
+    out << std::quoted(lastMessage) << '\\n';
+    out << combatEvents.size() << '\\n';
+    for (const auto& event : combatEvents) out << event.positive << ' ' << std::quoted(event.text) << '\\n';
+    if (out.good()) lastMessage = "ИГРА СОХРАНЕНА! Файл savegame.txt создан.";
+    else lastMessage = "ОШИБКА при записи сохранения.";
+}
+
+void GameLogic::loadGame() {
+    std::ifstream in("savegame.txt");
+    if (!in) return;
+    Player loadedPlayer;
+    Boss loadedBoss;
+    int loadedBossIndex, bossType, state, loadedSpinCost, loadedHold, reelValues[3];
+    int loadedShield, loadedHackTarget;
+    bool loadedLocks, loadedArmor, loadedHack;
+    std::string loadedMessage;
+    size_t eventCount;
+    if (!(in >> loadedPlayer.hp >> loadedPlayer.maxHp >> loadedPlayer.balance
+          >> loadedPlayer.energy >> loadedPlayer.maxEnergy >> loadedPlayer.isHpRed
+          >> loadedPlayer.spinsSinceHold)) return;
+    if (!(in >> loadedBossIndex >> bossType >> loadedBoss.hp >> loadedBoss.maxHp
+          >> loadedBoss.atk >> loadedBoss.specAtk >> loadedBoss.chargeTimer
+          >> loadedBoss.isBlocking)) return;
+    if (!(in >> std::quoted(loadedBoss.name))) return;
+    loadedBoss.type = static_cast<BossType>(bossType);
+    if (!(in >> state >> loadedSpinCost >> loadedHold)) return;
+    for (int i = 0; i < 3; ++i) if (!(in >> reelValues[i])) return;
+    if (!(in >> loadedShield >> loadedLocks >> loadedArmor >> loadedHack >> loadedHackTarget)) return;
+    if (!(in >> std::quoted(loadedMessage) >> eventCount)) return;
+    std::vector<CombatEvent> loadedEvents;
+    for (size_t i = 0; i < eventCount; ++i) {
+        CombatEvent event;
+        if (!(in >> event.positive >> std::quoted(event.text))) return;
+        loadedEvents.push_back(event);
+    }
+    player = loadedPlayer;
+    currentBoss = loadedBoss;
+    bossIndex = loadedBossIndex;
+    currentState = static_cast<GameState>(state);
+    spinCost = loadedSpinCost;
+    heldReelIndex = loadedHold;
+    for (int i = 0; i < 3; ++i) reels[i] = static_cast<Symbol>(reelValues[i]);
+    shieldBlocksRemaining = loadedShield;
+    locksActive = loadedLocks;
+    armorActive = loadedArmor;
+    hackPending = loadedHack;
+    hackTarget = static_cast<Symbol>(loadedHackTarget);
+    lastMessage = loadedMessage;
+    combatEvents = loadedEvents;
+}
