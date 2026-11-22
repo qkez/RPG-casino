@@ -34,6 +34,7 @@ Symbol GameLogic::getRandomSymbol() {
 // ЛОГИКА СПИНА
 // ==========================================
 void GameLogic::spin() {
+    combatEvents.clear();
     // Если игра окончена или мы в другом режиме - не крутим
     if (currentState != GameState::PLAYING && currentState != GameState::BLOOD_SPIN) return;
 
@@ -107,7 +108,7 @@ void GameLogic::spin() {
         // --- ОБРАБОТКА ВЫПАВШИХ СИМВОЛОВ ---
         // Сначала проверяем тройки (Джекпоты), потом двойки
         if (counts[static_cast<int>(Symbol::SWORD)] == 3) {
-            int dmg = static_cast<int>(currentBoss.maxHp * 0.40f);
+            int dmg = static_cast<int>(currentBoss.maxHp * 0.60f);
             currentBoss.hp -= dmg;
             if (currentBoss.hp < 0) currentBoss.hp = 0;
             lastMessage = "ДЖЕКПОТ! 🗡️🗡️🗡️ Урон боссу: " + std::to_string(dmg);
@@ -119,8 +120,10 @@ void GameLogic::spin() {
             lastMessage = "ДЖЕКПОТ! 💣💣💣 Взрыв! Урон: " + std::to_string(dmg);
         }
         else if (counts[static_cast<int>(Symbol::MEDKIT)] == 3) {
+            int healed = player.maxHp - player.hp;
             player.hp = player.maxHp;
-            player.isHpRed = false; // Возвращаем зеленый цвет
+            player.isHpRed = false;
+            if (healed > 0) combatEvents.push_back({"+" + std::to_string(healed) + " HP", true});
             lastMessage = "ДЖЕКПОТ! 🧪🧪🧪 Полное восстановление HP!";
         }
         else if (counts[static_cast<int>(Symbol::BATTERY)] == 3) {
@@ -154,7 +157,7 @@ void GameLogic::spin() {
 
         // --- ОБЫЧНЫЕ ВЫПАДЕНИЯ (ДВОЙКИ) ---
         else if (counts[static_cast<int>(Symbol::SWORD)] == 2) {
-            int dmg = static_cast<int>(currentBoss.maxHp * 0.05f);
+            int dmg = static_cast<int>(currentBoss.maxHp * 0.10f);
             currentBoss.hp -= dmg;
             if (currentBoss.hp < 0) currentBoss.hp = 0;
             lastMessage = "2 меча! Урон боссу: " + std::to_string(dmg);
@@ -174,11 +177,14 @@ void GameLogic::spin() {
             lastMessage = "2 замка! Броня снижает урон обычных атак босса на 30% до конца боя.";
         }
         else if (counts[static_cast<int>(Symbol::MEDKIT)] == 2) {
+            int oldHp = player.hp;
             int heal = static_cast<int>(player.maxHp * 0.15f);
             player.hp += heal;
             if (player.hp > player.maxHp) player.hp = player.maxHp;
+            int actualHeal = player.hp - oldHp;
             player.isHpRed = false;
-            lastMessage = "2 аптечки! Лечение: +" + std::to_string(heal) + " HP";
+            if (actualHeal > 0) combatEvents.push_back({"+" + std::to_string(actualHeal) + " HP", true});
+            lastMessage = "2 аптечки! Лечение: +" + std::to_string(actualHeal) + " HP";
         }
         else if (counts[static_cast<int>(Symbol::BATTERY)] == 2) {
             player.energy += 20;
@@ -196,6 +202,7 @@ void GameLogic::spin() {
         else if (counts[static_cast<int>(Symbol::SKULL)] == 2) {
             int dmg = static_cast<int>(player.hp * 0.04f);
             player.hp -= dmg;
+            combatEvents.push_back({"-" + std::to_string(dmg) + " HP (черепа)", false});
             lastMessage = "2 черепа! Вы потеряли " + std::to_string(dmg) + " HP.";
         }
         else {
@@ -216,6 +223,7 @@ void GameLogic::bossTurn() {
     auto takeBossAttack = [this](int damage, bool isSpecial) {
         if (shieldBlocksRemaining > 0) {
             --shieldBlocksRemaining;
+            combatEvents.push_back({"АТАКА ЗАБЛОКИРОВАНА ЩИТОМ", true});
             lastMessage += " Щит полностью заблокировал атаку босса!";
             return;
         }
@@ -227,9 +235,11 @@ void GameLogic::bossTurn() {
         int finalDamage = damage;
         if (!isSpecial && armorActive) {
             finalDamage = static_cast<int>(damage * 0.70f);
+            combatEvents.push_back({"БРОНЯ: урон снижен на 30%", true});
         }
 
         player.hp -= finalDamage;
+        combatEvents.push_back({"-" + std::to_string(finalDamage) + " HP", false});
         lastMessage += isSpecial
             ? " Босс нанес УЛЬТИМАТИВНЫЙ УДАР на " + std::to_string(finalDamage) + " урона!"
             : " Босс нанес обычный удар на " + std::to_string(finalDamage) + " урона.";
@@ -252,17 +262,22 @@ void GameLogic::bossTurn() {
         return;
     }
 
-    // Случайный выбор действия: 70% — обычная атака, 30% — зарядка ульты.
+    // Случайный выбор: 45% — обычная атака, 25% — зарядка ульты,
+    // 30% — босс выжидает и пропускает ход.
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> action(1, 100);
+    const int choice = action(gen);
 
-    if (action(gen) <= 70) {
+    if (choice <= 45) {
         takeBossAttack(currentBoss.atk, false);
     }
-    else {
+    else if (choice <= 70) {
         currentBoss.chargeTimer = 2;
         lastMessage += " Босс начал заряжать ульту! Следующие два спина он не атакует.";
+    }
+    else {
+        lastMessage += " Босс выжидает и пропускает атаку.";
     }
 }
 void GameLogic::doBloodSpin() {
@@ -272,6 +287,8 @@ void GameLogic::doBloodSpin() {
 
     int hpCost = static_cast<int>(player.maxHp * 0.05f);
     player.hp -= hpCost;
+    combatEvents.clear();
+    combatEvents.push_back({"-" + std::to_string(hpCost) + " HP (кровавый спин)", false});
     player.isHpRed = true; // Шкала становится красной
 
     // Если цена кровавого спина убила игрока, обычный спин не запускаем.
