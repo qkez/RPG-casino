@@ -231,7 +231,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
 
     // --- 3. ЛОГ СООБЩЕНИЙ (сдвинут вниз под портреты) ---
     if (isSpinning) {
-        drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 50, 305, 16, sf::Color::Cyan, false, false);
+        drawText(window, "БАРАБАНЫ КРУТЯТСЯ...", 390, 305, 16, sf::Color::Cyan, false, false);
     }
     else {
         sf::RectangleShape logPanel(sf::Vector2f(940.f, 125.f));
@@ -244,7 +244,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         drawWrappedText(window, game.lastMessage, 45.f, 342.f, 910.f, 18, sf::Color(220, 240, 220));
     }
 
-    // История боя: расширенная панель, события идут единым текстом без наложений.
+    // История боя: панель с цветным выводом полезных эффектов и атак.
     if (!game.combatEvents.empty()) {
         sf::RectangleShape eventPanel(sf::Vector2f(300.f, 130.f));
         eventPanel.setPosition(320.f, 175.f);
@@ -254,13 +254,13 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         window.draw(eventPanel);
         drawText(window, "ИСТОРИЯ БОЯ", 332, 178, 12, sf::Color(180, 180, 210), false, true);
 
-        std::string eventText;
-        sf::Color eventColor = sf::Color(220, 220, 220);
-        for (std::size_t i = 0; i < game.combatEvents.size(); ++i) {
-            if (i > 0) eventText += "\n";
-            eventText += game.combatEvents[i].text;
+        float eventY = 198.f;
+        for (const auto& event : game.combatEvents) {
+            sf::Color eventColor = event.positive
+                ? sf::Color(80, 255, 120) : sf::Color(255, 90, 90);
+            drawWrappedText(window, event.text, 332.f, eventY, 275.f, 11, eventColor);
+            eventY += 18.f;
         }
-        drawWrappedText(window, eventText, 332.f, 198.f, 275.f, 11, eventColor);
     }
 
     // --- 4. БАРАБАНЫ С КАРТИНКАМИ И АНИМАЦИЕЙ (сдвинуты вниз) ---
