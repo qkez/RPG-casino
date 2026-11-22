@@ -15,6 +15,10 @@ public:
     void startBloodSpinAnimation(int hpCost);
     bool takeSpinAnimationFinished();
     void triggerBloodFlash(int hpLost);
+    void armHoldSelection();
+    bool isSelectingHold() const;
+    int getReelIndexAt(int mouseX, int mouseY) const;
+    void cancelHoldSelection();
 
 private:
     sf::Font fontMain;
@@ -27,6 +31,7 @@ private:
     std::map<BossType, sf::Texture> bossTextures;
 
     bool isSpinning = false;
+    bool holdSelectionMode = false;
     bool bloodSpinDelay = false;
     sf::Clock bloodSpinDelayTimer;
     bool spinAnimationFinished = false;
