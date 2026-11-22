@@ -62,8 +62,8 @@ UI::UI() {
     holdButton.setOutlineColor(sf::Color(0, 220, 255));
     holdButton.setOutlineThickness(2.f);
 
-    hackButton.setSize(sf::Vector2f(100, 40));
-    hackButton.setPosition(750, 650);
+    hackButton.setSize(sf::Vector2f(120, 48));
+    hackButton.setPosition(740, 645);
     hackButton.setFillColor(sf::Color(25, 20, 40));
     hackButton.setOutlineColor(sf::Color(255, 0, 170));
     hackButton.setOutlineThickness(2.f);
@@ -81,6 +81,12 @@ UI::UI() {
     saveButton.setFillColor(sf::Color(20, 35, 50));
     saveButton.setOutlineColor(sf::Color(80, 255, 120));
     saveButton.setOutlineThickness(2.f);
+
+    newGameButton.setSize(sf::Vector2f(180, 30));
+    newGameButton.setPosition(680, 10);
+    newGameButton.setFillColor(sf::Color(35, 25, 45));
+    newGameButton.setOutlineColor(sf::Color(255, 170, 60));
+    newGameButton.setOutlineThickness(2.f);
 }
 
 void UI::armHoldSelection() { holdSelectionMode = true; }
@@ -369,8 +375,8 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         if (holdSelectionMode) drawText(window, "КЛИКНИ БАРАБАН", 140, 625, 12, sf::Color(255, 220, 70), false, true);
 
         window.draw(hackButton);
-        sf::RectangleShape hackInner(sf::Vector2f(92.f, 32.f));
-        hackInner.setPosition(754.f, 654.f);
+        sf::RectangleShape hackInner(sf::Vector2f(112.f, 40.f));
+        hackInner.setPosition(744.f, 649.f);
         hackInner.setFillColor(sf::Color::Transparent);
         hackInner.setOutlineColor(sf::Color(120, 50, 220, 200));
         hackInner.setOutlineThickness(1.f);
@@ -385,6 +391,15 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         window.draw(robberyButton);
         drawCenteredButtonText("ОГРАБИТЬ КАЗИНО", robberyButton, 20, sf::Color::White);
     }
+
+    window.draw(newGameButton);
+    sf::RectangleShape newGameInner(sf::Vector2f(172.f, 22.f));
+    newGameInner.setPosition(684.f, 14.f);
+    newGameInner.setFillColor(sf::Color::Transparent);
+    newGameInner.setOutlineColor(sf::Color(180, 100, 40, 180));
+    newGameInner.setOutlineThickness(1.f);
+    window.draw(newGameInner);
+    drawCenteredButtonText("НОВАЯ ИГРА", newGameButton, 13, sf::Color(255, 190, 90));
 
     window.draw(saveButton);
     sf::RectangleShape saveInner(sf::Vector2f(92.f, 22.f));
@@ -427,6 +442,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     }
 }
 UIButton UI::getClickedButton(int mouseX, int mouseY, GameState currentState) {
+    if (newGameButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::NEW_GAME;
     if (saveButton.getGlobalBounds().contains(mouseX, mouseY)) return UIButton::SAVE_EXIT;
     if (isSpinning || bloodSpinDelay) return UIButton::NONE;
     if (currentState == GameState::PLAYING) {
