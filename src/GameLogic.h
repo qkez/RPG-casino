@@ -2,6 +2,11 @@
 #include <string>
 #include <vector>
 
+struct CombatEvent {
+    std::string text;
+    bool positive = false;
+};
+
 
 // Наши 10 символов
 enum class Symbol { SWORD, BOMB, SHIELD, LOCK, MEDKIT, BATTERY, COIN, DIAMOND, SKULL, JOKER };
@@ -44,6 +49,7 @@ public:
     Symbol reels[3];
     GameState currentState = GameState::PLAYING;
     std::string lastMessage = "Добро пожаловать в Казино!";
+    std::vector<CombatEvent> combatEvents;
     int spinCost = 250;
 
     // Действия игрока
