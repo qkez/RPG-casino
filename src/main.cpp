@@ -29,9 +29,9 @@ int main() {
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 if (ui.isSelectingHold()) {
                     int selectedReel = ui.getReelIndexAt(event.mouseButton.x, event.mouseButton.y);
+                    ui.cancelHoldSelection();
                     if (selectedReel >= 0) {
                         game.holdReel(selectedReel);
-                        ui.cancelHoldSelection();
                         continue;
                     }
                 }
