@@ -48,6 +48,16 @@ int main() {
                     bloodSpinPending = false;
                     ui.cancelHoldSelection();
                 }
+                else if (btn == UIButton::DEV_PREV) {
+                    game.setBossForTesting((game.bossIndex + 2) % 3);
+                    bloodSpinPending = false;
+                    ui.cancelHoldSelection();
+                }
+                else if (btn == UIButton::DEV_NEXT) {
+                    game.setBossForTesting((game.bossIndex + 1) % 3);
+                    bloodSpinPending = false;
+                    ui.cancelHoldSelection();
+                }
                 else if (btn == UIButton::HOLD) ui.armHoldSelection();
                 else if (btn == UIButton::HACK) game.useHack(Symbol::JOKER);
             }
