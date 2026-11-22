@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <algorithm>
 
 UI::UI() {
     if (!fontPixel.loadFromFile("assets/font_pixel.ttf")) {
@@ -612,8 +613,9 @@ void UI::drawLevelTransition(sf::RenderWindow& window, const GameLogic& game) {
     }
 
     // Затемняем текущий интерфейс, сохраняя его под заставкой.
+    const float transitionFade = std::max(0.f, std::min(1.f, (elapsed - 6.25f) / 0.55f));
     sf::RectangleShape shade(sf::Vector2f(1000.f, 750.f));
-    shade.setFillColor(sf::Color(3, 2, 6, 242));
+    shade.setFillColor(sf::Color(3, 2, 6, static_cast<sf::Uint8>(242.f * (1.f - transitionFade))));
     window.draw(shade);
 
     auto centered = [&](const std::string& value, float y, unsigned int size,
@@ -743,14 +745,6 @@ void UI::drawLevelTransition(sf::RenderWindow& window, const GameLogic& game) {
             window.draw(glow);
             if (rand() % 100 < 35)
                 glitchBar(250.f + static_cast<float>(rand() % 300), 180.f + static_cast<float>(rand() % 500), 150);
-        } else {
-            // Последняя вспышка и плавное возвращение к игровому экрану.
-            const float fade = std::max(0.f, std::min(1.f, (elapsed - 6.25f) / 0.55f));
-            if (fade > 0.f) {
-                sf::RectangleShape revealOverlay(sf::Vector2f(1000.f, 750.f));
-                revealOverlay.setFillColor(sf::Color(3, 2, 6, static_cast<sf::Uint8>(242.f * (1.f - fade))));
-                window.draw(revealOverlay);
-            }
         }
     }
 }
