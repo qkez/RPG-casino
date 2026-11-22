@@ -336,9 +336,24 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     }
 
     // --- 5. КНОПКИ ---
+    auto drawCenteredButtonText = [&](const std::string& label, const sf::RectangleShape& button,
+                                      unsigned int size, sf::Color color) {
+        sf::Text text;
+        text.setFont(fontMain);
+        text.setString(sf::String::fromUtf8(label.begin(), label.end()));
+        text.setCharacterSize(size);
+        text.setFillColor(color);
+        sf::FloatRect bounds = text.getLocalBounds();
+        text.setOrigin(bounds.left + bounds.width / 2.f, bounds.top + bounds.height / 2.f);
+        sf::Vector2f buttonPos = button.getPosition();
+        sf::Vector2f buttonSize = button.getSize();
+        text.setPosition(buttonPos.x + buttonSize.x / 2.f, buttonPos.y + buttonSize.y / 2.f);
+        window.draw(text);
+    };
+
     if (game.currentState == GameState::PLAYING) {
         window.draw(spinButton);
-        drawText(window, "SPIN", 465, 665, 24, sf::Color::Black, false, true);
+        drawCenteredButtonText("SPIN", spinButton, 24, sf::Color::Black);
 
         holdButton.setFillColor(holdSelectionMode ? sf::Color(15, 65, 80) : sf::Color(20, 35, 50));
         holdButton.setOutlineColor(holdSelectionMode ? sf::Color(255, 220, 70) : sf::Color(0, 220, 255));
@@ -360,15 +375,15 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
         hackInner.setOutlineColor(sf::Color(120, 50, 220, 200));
         hackInner.setOutlineThickness(1.f);
         window.draw(hackInner);
-        drawText(window, "HACK", 765, 660, 18, sf::Color(255, 80, 210), false, true);
+        drawCenteredButtonText("HACK", hackButton, 18, sf::Color(255, 80, 210));
     }
     else if (game.currentState == GameState::BLOOD_SPIN) {
         window.draw(bloodSpinButton);
-        drawText(window, "КРОВАВЫЙ СПИН", 415, 665, 20, sf::Color::White, false, true);
+        drawCenteredButtonText("КРОВАВЫЙ СПИН", bloodSpinButton, 20, sf::Color::White);
     }
     else if (game.currentState == GameState::ROBBERY) {
         window.draw(robberyButton);
-        drawText(window, "ОГРАБИТЬ КАЗИНО", 415, 665, 20, sf::Color::White, false, true);
+        drawCenteredButtonText("ОГРАБИТЬ КАЗИНО", robberyButton, 20, sf::Color::White);
     }
 
     window.draw(saveButton);
@@ -378,7 +393,7 @@ void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     saveInner.setOutlineColor(sf::Color(40, 170, 90, 180));
     saveInner.setOutlineThickness(1.f);
     window.draw(saveInner);
-    drawText(window, "SAVE", 905, 12, 14, sf::Color(100, 255, 140), false, true);
+    drawCenteredButtonText("SAVE", saveButton, 14, sf::Color(100, 255, 140));
 
     // --- 6. АНИМАЦИЯ КРОВАВОЙ ВСПЫШКИ И ВЫЛЕТАЮЩИЙ ТЕКСТ ---
     if (isBloodFlashing) {
