@@ -64,6 +64,7 @@ public:
     // Сохранение
     void saveGame();
     void loadGame();
+    void restartGame();
 
 private:
     int shieldBlocksRemaining = 0;
