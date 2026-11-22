@@ -428,19 +428,19 @@ void GameLogic::saveGame() {
     }
     out << player.hp << ' ' << player.maxHp << ' ' << player.balance << ' '
         << player.energy << ' ' << player.maxEnergy << ' ' << player.isHpRed << ' '
-        << player.spinsSinceHold << '\\n';
+        << player.spinsSinceHold << '\n';
     out << bossIndex << ' ' << static_cast<int>(currentBoss.type) << ' '
         << currentBoss.hp << ' ' << currentBoss.maxHp << ' ' << currentBoss.atk << ' '
         << currentBoss.specAtk << ' ' << currentBoss.chargeTimer << ' '
-        << currentBoss.isBlocking << '\\n';
-    out << std::quoted(currentBoss.name) << '\\n';
-    out << static_cast<int>(currentState) << ' ' << spinCost << ' ' << heldReelIndex << '\\n';
+        << currentBoss.isBlocking << '\n';
+    out << std::quoted(currentBoss.name) << '\n';
+    out << static_cast<int>(currentState) << ' ' << spinCost << ' ' << heldReelIndex << '\n';
     for (int i = 0; i < 3; ++i) out << static_cast<int>(reels[i]) << ' ';
-    out << '\\n' << shieldBlocksRemaining << ' ' << locksActive << ' ' << armorActive
-        << ' ' << hackPending << ' ' << static_cast<int>(hackTarget) << '\\n';
-    out << std::quoted(lastMessage) << '\\n';
-    out << combatEvents.size() << '\\n';
-    for (const auto& event : combatEvents) out << event.positive << ' ' << std::quoted(event.text) << '\\n';
+    out << '\n' << shieldBlocksRemaining << ' ' << locksActive << ' ' << armorActive
+        << ' ' << hackPending << ' ' << static_cast<int>(hackTarget) << '\n';
+    out << std::quoted(lastMessage) << '\n';
+    out << combatEvents.size() << '\n';
+    for (const auto& event : combatEvents) out << event.positive << ' ' << std::quoted(event.text) << '\n';
     if (out.good()) lastMessage = "ИГРА СОХРАНЕНА! Файл savegame.txt создан.";
     else lastMessage = "ОШИБКА при записи сохранения.";
 }
