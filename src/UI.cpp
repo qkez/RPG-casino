@@ -197,7 +197,7 @@ void UI::drawBar(sf::RenderWindow& window, int x, int y, int value, int max, sf:
 void UI::draw(sf::RenderWindow& window, const GameLogic& game) {
     // --- 1. ИНФОРМАЦИЯ ОБ ИГРОКЕ ---
     sf::Color hpColor = game.player.isHpRed ? sf::Color::Red : sf::Color::Green;
-    drawBar(window, 50, 65, game.player.hp, game.player.maxHp, hpColor);
+    drawBar(window, 50, 50, game.player.hp, game.player.maxHp, hpColor);
 
     drawText(window, "HP: " + std::to_string(game.player.hp) + "/" + std::to_string(game.player.maxHp), 50, 95, 18, sf::Color::White, false, false);
     drawText(window, "КРЕДИТЫ: " + std::to_string(game.player.balance), 50, 125, 18, sf::Color::Yellow, false, false);
