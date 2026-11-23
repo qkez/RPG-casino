@@ -5,6 +5,23 @@
 int main() {
     bool bloodSpinPending = false;
     sf::RenderWindow window(sf::VideoMode(1000, 750), "Cyberpunk RPG Casino");
+    sf::View gameView(sf::FloatRect(0.f, 0.f, 1000.f, 750.f));
+    auto updateGameView = [&](unsigned int width, unsigned int height) {
+        if (width == 0 || height == 0) return;
+        constexpr float logicalAspect = 1000.f / 750.f;
+        const float windowAspect = static_cast<float>(width) / static_cast<float>(height);
+        sf::FloatRect viewport(0.f, 0.f, 1.f, 1.f);
+        if (windowAspect > logicalAspect) {
+            viewport.width = logicalAspect / windowAspect;
+            viewport.left = (1.f - viewport.width) / 2.f;
+        } else {
+            viewport.height = windowAspect / logicalAspect;
+            viewport.top = (1.f - viewport.height) / 2.f;
+        }
+        gameView.setViewport(viewport);
+        window.setView(gameView);
+    };
+    updateGameView(window.getSize().x, window.getSize().y);
 
     GameLogic game;
     UI ui;
@@ -13,6 +30,7 @@ int main() {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
+            if (event.type == sf::Event::Resized) updateGameView(event.size.width, event.size.height);
 
             if (ui.introActive()) {
                 if (event.type == sf::Event::KeyPressed || event.type == sf::Event::MouseButtonPressed)
@@ -38,14 +56,16 @@ int main() {
 
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 if (ui.isSelectingHold()) {
-                    int selectedReel = ui.getReelIndexAt(event.mouseButton.x, event.mouseButton.y);
+                    sf::Vector2f logicalMouse = window.mapPixelToCoords(sf::Vector2i(event.mouseButton.x, event.mouseButton.y));
+                    int selectedReel = ui.getReelIndexAt(static_cast<int>(logicalMouse.x), static_cast<int>(logicalMouse.y));
                     ui.cancelHoldSelection();
                     if (selectedReel >= 0) {
                         game.holdReel(selectedReel);
                         continue;
                     }
                 }
-                UIButton btn = ui.getClickedButton(event.mouseButton.x, event.mouseButton.y, game.currentState);
+                sf::Vector2f logicalMouse = window.mapPixelToCoords(sf::Vector2i(event.mouseButton.x, event.mouseButton.y));
+                UIButton btn = ui.getClickedButton(static_cast<int>(logicalMouse.x), static_cast<int>(logicalMouse.y), game.currentState);
 
                 if (btn == UIButton::SPIN) {
                     bloodSpinPending = false;
