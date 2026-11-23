@@ -7,11 +7,36 @@
 #include <string>
 #include <iomanip>
 #include <cstdio>
+#include <limits>
+#include <cstdint>
+
+namespace {
+constexpr int kMaxPersistedStat = 10000000;
+constexpr int kMaxShields = 1000;
+int saturatingAdd(int value, int delta) {
+    const long long result = static_cast<long long>(value) + delta;
+    return static_cast<int>(std::clamp(result, 0LL, static_cast<long long>(std::numeric_limits<int>::max())));
+}
+int saturatingMultiply(int value, int multiplier) {
+    const long long result = static_cast<long long>(value) * multiplier;
+    return static_cast<int>(std::clamp(result, 0LL, static_cast<long long>(std::numeric_limits<int>::max())));
+}
+int scaledStat(int value, double factor) {
+    const long long result = static_cast<long long>(static_cast<double>(value) * factor);
+    return static_cast<int>(std::clamp(result, 1LL, static_cast<long long>(kMaxPersistedStat)));
+}
+int cappedHeal(int hp, int maxHp, int amount) {
+    return static_cast<int>(std::clamp(static_cast<long long>(hp) + amount, 0LL, static_cast<long long>(maxHp)));
+}
+int skullDamage(int hp) {
+    return hp > 0 ? std::max(1, static_cast<int>(hp * 0.04f)) : 0;
+}
+}
 
 // ==========================================
 // КОНСТРУКТОР
 // ==========================================
-GameLogic::GameLogic() {
+GameLogic::GameLogic() : reels{ Symbol::SWORD, Symbol::COIN, Symbol::SKULL } {
     loadGame(); // Пытаемся загрузить прогресс
 
     // Если сохранения нет и босс не создан, начинаем сначала
@@ -153,14 +178,14 @@ void GameLogic::spin() {
             lastMessage = "ДЖЕКПОТ! ТРИ БАТАРЕЙКИ! Энергия восстановлена полностью!";
         }
         else if (counts[static_cast<int>(Symbol::COIN)] == 3) {
-            player.balance *= (jokerCoinMultiplier ? 10 : 2);
+            player.balance = saturatingMultiply(player.balance, (jokerCoinMultiplier ? 10 : 2));
             if (player.balance == 0) player.balance = (jokerCoinMultiplier ? 2500 : 500);
             lastMessage = jokerCoinMultiplier
                 ? "ДЖЕКПОТ! ДВА ДЖОКЕРА + МОНЕТА! Кредиты умножены на 10! Теперь у вас: " + std::to_string(player.balance)
                 : "ДЖЕКПОТ! ТРИ МОНЕТЫ! Кредиты удвоены! Теперь у вас: " + std::to_string(player.balance);
         }
         else if (counts[static_cast<int>(Symbol::DIAMOND)] == 3) {
-            player.balance *= 10;
+            player.balance = saturatingMultiply(player.balance, 10);
             if (player.balance == 0) player.balance = 2500;
             lastMessage = "ДЖЕКПОТ! ТРИ АЛМАЗА! Кредиты умножены на 10! Теперь у вас: " + std::to_string(player.balance);
         }
@@ -170,7 +195,7 @@ void GameLogic::spin() {
             lastMessage = "ДЖЕКПОТ! ТРИ ЧЕРЕПА! У вас остался 1 HP!";
         }
         else if (counts[static_cast<int>(Symbol::SHIELD)] == 3) {
-            shieldBlocksRemaining += 3;
+            shieldBlocksRemaining = std::min(kMaxShields, shieldBlocksRemaining + 3);
             lastMessage = "ДЖЕКПОТ! ТРИ ЩИТА! Следующие 3 атаки босса заблокированы!";
         }
         else if (counts[static_cast<int>(Symbol::LOCK)] == 3) {
@@ -200,7 +225,7 @@ void GameLogic::spin() {
             lastMessage = "2 бомбы! Урон: " + std::to_string(dmg);
         }
         else if (counts[static_cast<int>(Symbol::SHIELD)] == 2) {
-            shieldBlocksRemaining += 1;
+            shieldBlocksRemaining = std::min(kMaxShields, shieldBlocksRemaining + 1);
             lastMessage = "2 щита! Следующая атака босса будет полностью заблокирована.";
         }
         else if (counts[static_cast<int>(Symbol::LOCK)] == 2) {
@@ -210,8 +235,7 @@ void GameLogic::spin() {
         else if (counts[static_cast<int>(Symbol::MEDKIT)] == 2) {
             int oldHp = player.hp;
             int heal = static_cast<int>(player.maxHp * 0.20f);
-            player.hp += heal;
-            if (player.hp > player.maxHp) player.hp = player.maxHp;
+            player.hp = cappedHeal(player.hp, player.maxHp, heal);
             int actualHeal = player.hp - oldHp;
             player.isHpRed = false;
             if (actualHeal > 0) combatEvents.push_back({"+" + std::to_string(actualHeal) + " HP", true});
@@ -223,15 +247,15 @@ void GameLogic::spin() {
             lastMessage = "2 батарейки! +20 энергии.";
         }
         else if (counts[static_cast<int>(Symbol::COIN)] == 2) {
-            player.balance += 666;
+            player.balance = saturatingAdd(player.balance, 666);
             lastMessage = "2 монеты! +666 кредитов.";
         }
         else if (counts[static_cast<int>(Symbol::DIAMOND)] == 2) {
-            player.balance += 2222;
+            player.balance = saturatingAdd(player.balance, 2222);
             lastMessage = "2 алмаза! +2222 кредита.";
         }
         else if (counts[static_cast<int>(Symbol::SKULL)] == 2) {
-            int dmg = static_cast<int>(player.hp * 0.04f);
+            int dmg = skullDamage(player.hp);
             player.hp -= dmg;
             combatEvents.push_back({"-" + std::to_string(dmg) + " HP (черепа)", false});
             lastMessage = "2 черепа! Вы потеряли " + std::to_string(dmg) + " HP.";
@@ -359,7 +383,7 @@ void GameLogic::doBloodSpin() {
 
     // Кровавый спин дает 500 кредитов, после чего выполняется
     // обычный спин с обычной стоимостью в 250 кредитов.
-    player.balance += 500;
+    player.balance = saturatingAdd(player.balance, 500);
     currentState = GameState::PLAYING;
 
     spin();
@@ -411,7 +435,7 @@ void GameLogic::nextBoss() {
     hackTarget = Symbol::SWORD;
     heldReelIndex = -1;
     player.spinsSinceHold = 3; // Новый уровень начинается с доступного HOLD
-    player.maxHp = static_cast<int>(player.maxHp * 1.1f); // +10% к макс HP
+    player.maxHp = scaledStat(player.maxHp, 1.1); // +10% к макс HP
     player.hp = static_cast<int>(player.maxHp * 0.75f);  // Восстановление 75% HP
     player.isHpRed = false;
 
@@ -449,7 +473,7 @@ void GameLogic::setBossForTesting(int index) {
     // за каждый пройденный уровень и восстановление до 50% HP.
     player.maxHp = 6666;
     for (int level = 0; level < bossIndex; ++level)
-        player.maxHp = static_cast<int>(player.maxHp * 1.1f);
+        player.maxHp = scaledStat(player.maxHp, 1.1);
     player.hp = static_cast<int>(player.maxHp * 0.75f);
     player.isHpRed = false;
 
@@ -595,17 +619,17 @@ void GameLogic::loadGame() {
     }
     // Проверяем диапазоны до присваивания: повреждённый файл не должен
     // создавать недопустимые индексы барабанов или состояния игры.
-    if (loadedPlayer.maxHp <= 0 || loadedPlayer.hp < 0 || loadedPlayer.hp > loadedPlayer.maxHp ||
-        loadedPlayer.balance < 0 || loadedPlayer.maxEnergy <= 0 ||
+    if (loadedPlayer.maxHp <= 0 || loadedPlayer.maxHp > kMaxPersistedStat || loadedPlayer.hp < 0 || loadedPlayer.hp > loadedPlayer.maxHp ||
+        loadedPlayer.balance < 0 || loadedPlayer.maxEnergy <= 0 || loadedPlayer.maxEnergy > kMaxPersistedStat ||
         loadedPlayer.energy < 0 || loadedPlayer.energy > loadedPlayer.maxEnergy ||
         loadedPlayer.spinsSinceHold < 0 ||
         loadedBossIndex < 0 || loadedBossIndex > 3 ||
         bossType < 0 || bossType > 2 ||
-        loadedBoss.maxHp <= 0 || loadedBoss.hp < 0 || loadedBoss.hp > loadedBoss.maxHp ||
-        loadedBoss.atk < 0 || loadedBoss.specAtk < 0 ||
+        loadedBoss.maxHp <= 0 || loadedBoss.maxHp > kMaxPersistedStat || loadedBoss.hp < 0 || loadedBoss.hp > loadedBoss.maxHp ||
+        loadedBoss.atk < 0 || loadedBoss.atk > kMaxPersistedStat || loadedBoss.specAtk < 0 || loadedBoss.specAtk > kMaxPersistedStat ||
         loadedBoss.chargeTimer < -1 || loadedBoss.chargeTimer > 2 ||
         state < 0 || state > 4 || loadedSpinCost <= 0 ||
-        loadedHold < -1 || loadedHold > 2 || loadedShield < 0 ||
+        loadedHold < -1 || loadedHold > 2 || loadedShield < 0 || loadedShield > kMaxShields ||
         loadedHackTarget < 0 || loadedHackTarget > 9 || loadedBoss.name.empty()) return;
     for (int i = 0; i < 3; ++i) {
         if (reelValues[i] < 0 || reelValues[i] > 9) return;
