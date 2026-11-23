@@ -80,7 +80,7 @@ void GameLogic::spin() {
     }
 
     player.balance -= spinCost; // Списываем деньги
-    player.spinsSinceHold++;    // Счетчик для захвата (Hold)
+    if (player.spinsSinceHold < 3) ++player.spinsSinceHold;    // Счетчик для захвата (Hold)
 
     // Крутим барабаны. Активный HACK гарантирует один выбранный символ.
     for (int i = 0; i < 3; ++i) {
@@ -635,6 +635,7 @@ void GameLogic::loadGame() {
         if (reelValues[i] < 0 || reelValues[i] > 9) return;
     }
 
+    loadedPlayer.spinsSinceHold = std::min(3, loadedPlayer.spinsSinceHold);
     player = loadedPlayer;
     currentBoss = loadedBoss;
     bossIndex = loadedBossIndex;
