@@ -55,33 +55,14 @@ int main() {
                     bloodSpinPending = true;
                     ui.startBloodSpinAnimation(static_cast<int>(game.player.maxHp * 0.05f));
                 }
-                else if (btn == UIButton::ROBBERY) ui.startRobberyAnimation();
-                else if (btn == UIButton::DEV_ROBBERY) {
-                    game.prepareRobberyForTesting();
-                    bloodSpinPending = false;
-                    ui.cancelHoldSelection();
-                }
-                else if (btn == UIButton::SAVE_EXIT) {
+                else if (btn == UIButton::ROBBERY) ui.startRobberyAnimation();                else if (btn == UIButton::SAVE_EXIT) {
                     game.saveGame();
                 }
                 else if (btn == UIButton::NEW_GAME) {
                     game.restartGame();
                     bloodSpinPending = false;
                     ui.cancelHoldSelection();
-                }
-                else if (btn == UIButton::DEV_PREV) {
-                    game.setBossForTesting((game.bossIndex + 2) % 3);
-                    bloodSpinPending = false;
-                    ui.cancelHoldSelection();
-                    ui.startLevelTransition();
-                }
-                else if (btn == UIButton::DEV_NEXT) {
-                    game.setBossForTesting((game.bossIndex + 1) % 3);
-                    bloodSpinPending = false;
-                    ui.cancelHoldSelection();
-                    ui.startLevelTransition();
-                }
-                else if (btn == UIButton::HOLD) ui.armHoldSelection();
+                }                else if (btn == UIButton::HOLD) ui.armHoldSelection();
                 else if (btn == UIButton::HACK) game.useHack(Symbol::JOKER);
             }
         }
